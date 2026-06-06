@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import {
   AnimationStyle,
   ANIMATION_STYLE_LABELS,
+  REFRESH_INTERVAL_OPTIONS,
   Settings,
   TrayMode,
   TRAY_MODE_LABELS,
@@ -249,6 +250,31 @@ export function SettingsPanel({ open, onClose, settings, onChange }: Props) {
             <div className="settings-hint">
               Affects the live-session card only: on, each agent &amp; model gets its own
               row; off, rows collapse to one per app.
+            </div>
+          </section>
+
+          <section className="settings-section">
+            <div className="settings-label">Data refresh</div>
+            <div className="settings-group">
+              {REFRESH_INTERVAL_OPTIONS.map(min => {
+                const active = settings.refreshIntervalMin === min
+                return (
+                  <button
+                    key={min}
+                    type="button"
+                    className={`settings-row settings-row-radio${active ? ' is-active' : ''}`}
+                    onClick={() => onChange({ ...settings, refreshIntervalMin: min })}
+                    aria-pressed={active}
+                  >
+                    <span className="settings-row-label">{min === 60 ? 'Every hour' : `Every ${min} min`}</span>
+                    <span className="settings-row-check">{active && <CheckIcon />}</span>
+                  </button>
+                )
+              })}
+            </div>
+            <div className="settings-hint">
+              How often the dashboard re-reads your logs and quota. Live tokens/min
+              updates every few seconds regardless.
             </div>
           </section>
 

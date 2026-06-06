@@ -21,7 +21,11 @@ export interface Settings {
   // When true, agent limit bars fill by amount *used* (counting up); otherwise
   // they fill by amount *remaining* (counting down). Color always tracks health.
   limitsAsUsed: boolean
+  // How often the dashboard data (graph, models, quota) auto-refreshes, minutes.
+  refreshIntervalMin: number
 }
+
+export const REFRESH_INTERVAL_OPTIONS = [1, 5, 15, 30, 60] as const
 
 export const DEFAULT_SETTINGS: Settings = {
   trayMode: 'today_tokens',
@@ -30,6 +34,7 @@ export const DEFAULT_SETTINGS: Settings = {
   animationStyle: 'cat',
   detailedTrace: false,
   limitsAsUsed: false,
+  refreshIntervalMin: 30,
 }
 
 export const ANIMATION_STYLE_LABELS: Record<AnimationStyle, string> = {

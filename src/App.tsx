@@ -206,6 +206,15 @@ export default function App() {
     return () => window.clearInterval(id)
   }, [])
 
+  // Auto-refresh the dashboard data (graph, models, quota) on the user's chosen
+  // cadence by bumping the refresh tick — the same path as a manual refresh.
+  useEffect(() => {
+    const min = settings.refreshIntervalMin
+    if (!min || min <= 0) return
+    const id = window.setInterval(() => setRefreshTick(t => t + 1), min * 60 * 1000)
+    return () => window.clearInterval(id)
+  }, [settings.refreshIntervalMin])
+
   // Manual refresh from the header button, ⌘R, or the tray menu — bypasses
   // cache. Drives `refreshing` for the whole fetch so the header icon spins;
   // refresh_graph holds a ~450ms floor, so the spin is always visible.
