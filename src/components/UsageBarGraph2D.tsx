@@ -158,6 +158,7 @@ export function UsageBarGraph2D({
     return series
   }, [clientIds, payload, colorFor, stackBy])
 
+  const LEGEND_MAX = 12
   const maxTokens = Math.max(1, ...bars.map(b => b.totalTokens))
   const width = 520
   // viewBox height matches the rendered CSS height (.bar2d-svg) so there is no
@@ -169,9 +170,10 @@ export function UsageBarGraph2D({
   const chartHeight = height - top - bottom
   const gap = 4
   const barWidth = (width - gap * (bars.length - 1)) / bars.length
-  // Top models across the visible window, for the legend — aggregate tokens per
-  // model key and keep the heaviest few with their stack color.
-  const topModels = useMemo(() => {
+  // Every segment present across the visible window, for the legend —
+  // aggregate tokens per key and sort heaviest-first so the legend matches the
+  // stacked bars. Capped at LEGEND_MAX with a "+N" overflow chip.
+  const legendModels = useMemo(() => {
     const agg = new Map<string, { label: string; color: string; tokens: number }>()
     for (const bar of bars) {
       for (const seg of bar.segments) {
@@ -180,10 +182,10 @@ export function UsageBarGraph2D({
         agg.set(seg.key, slot)
       }
     }
-    return Array.from(agg.values())
-      .sort((a, b) => b.tokens - a.tokens)
-      .slice(0, 5)
+    return Array.from(agg.values()).sort((a, b) => b.tokens - a.tokens)
   }, [bars])
+  const legendShown = legendModels.slice(0, LEGEND_MAX)
+  const legendHidden = legendModels.length - legendShown.length
 
   function showTooltip(bar: DayBar, index: number) {
     if (bar.totalTokens <= 0 && bar.totalCost <= 0) return
@@ -213,24 +215,28 @@ export function UsageBarGraph2D({
           {headSubtitle && <div className="bar2d-sub">{headSubtitle}</div>}
         </div>
         <div className="bar2d-head-right">
-          <div className="bar2d-viewtoggle" role="group" aria-label="Stack grouping">
-            <button
-              type="button"
-              className={`bar2d-viewbtn${stackBy === 'model' ? ' is-active' : ''}`}
-              onClick={() => onStackByChange('model')}
-              aria-pressed={stackBy === 'model'}
-            >
-              Model
-            </button>
-            <button
-              type="button"
-              className={`bar2d-viewbtn${stackBy === 'agent' ? ' is-active' : ''}`}
-              onClick={() => onStackByChange('agent')}
-              aria-pressed={stackBy === 'agent'}
-            >
-              Agent
-            </button>
-          </div>
+          {/* Stacking is a 2D-only concept — the 3D view is the contribution
+              heatmap, not a per-model stack — so hide the toggle there. */}
+          {view === '2d' && (
+            <div className="bar2d-viewtoggle" role="group" aria-label="Stack grouping">
+              <button
+                type="button"
+                className={`bar2d-viewbtn${stackBy === 'model' ? ' is-active' : ''}`}
+                onClick={() => onStackByChange('model')}
+                aria-pressed={stackBy === 'model'}
+              >
+                Model
+              </button>
+              <button
+                type="button"
+                className={`bar2d-viewbtn${stackBy === 'agent' ? ' is-active' : ''}`}
+                onClick={() => onStackByChange('agent')}
+                aria-pressed={stackBy === 'agent'}
+              >
+                Agent
+              </button>
+            </div>
+          )}
           <div className="bar2d-viewtoggle" role="group" aria-label="Chart view">
             {kbdHints && <span className="kbd-pin kbd-pin-toggle" aria-hidden="true">⌘G</span>}
             <button
@@ -250,20 +256,26 @@ export function UsageBarGraph2D({
               3D
             </button>
           </div>
-          <div className="bar2d-legend">
-            {topModels.map(m => (
-              <span key={m.label} className="bar2d-legend-item">
-                <span className="bar2d-dot" style={{ background: m.color }} />
-                {m.label}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
 
       {stats && (
         <div className="bar2d-stats">
           <TokenUsageCard stats={stats} bare />
+        </div>
+      )}
+
+      {view === '2d' && legendShown.length > 0 && (
+        <div className="bar2d-legend">
+          {legendShown.map(m => (
+            <span key={m.label} className="bar2d-legend-item">
+              <span className="bar2d-dot" style={{ background: m.color }} />
+              {m.label}
+            </span>
+          ))}
+          {legendHidden > 0 && (
+            <span className="bar2d-legend-item bar2d-legend-more">+{legendHidden}</span>
+          )}
         </div>
       )}
 

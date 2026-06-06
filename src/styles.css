@@ -668,13 +668,19 @@ html, body, #root {
   font-weight: 650;
 }
 
-/* 2D stacked bar graph */
+/* 2D stacked bar graph — legend is a full-width wrapping row above the chart so
+   every stacked model shows, rather than being squeezed into the header. */
 .bar2d-legend {
   min-width: 0;
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 4px 10px;
   flex-wrap: wrap;
+  margin: 2px 0 10px;
+}
+.bar2d-legend-more {
+  color: var(--text-tertiary);
+  font-weight: 650;
 }
 .bar2d-legend-item {
   display: inline-flex;
