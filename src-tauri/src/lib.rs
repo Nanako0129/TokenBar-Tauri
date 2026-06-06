@@ -1,5 +1,6 @@
 mod animation;
 mod agent_usage;
+mod model_report;
 #[cfg(target_os = "macos")]
 mod native_tray;
 mod state;
@@ -34,9 +35,28 @@ pub struct RateUpdate {
     pub trace: Vec<TraceBucket>,
 }
 
+#[derive(Clone, Serialize)]
+pub struct ModelReportPayload {
+    pub year: String,
+    pub payload: serde_json::Value,
+}
+
 #[tauri::command]
 async fn get_agent_usage() -> Result<agent_usage::AgentUsagePayload, String> {
     Ok(agent_usage::run().await)
+}
+
+/// Per-model usage breakdown for `year`. Computed on demand — tokscale-core's
+/// message cache keeps the underlying parse cheap, so unlike the graph this
+/// skips the AppState cache (whose year-keyed map is also the refresh loop's
+/// source of known years).
+#[tauri::command]
+async fn get_model_report(year: String) -> Result<ModelReportPayload, String> {
+    let year_clone = year.clone();
+    let payload = async_runtime::spawn_blocking(move || model_report::run(&year_clone))
+        .await
+        .map_err(|e| format!("join: {}", e))??;
+    Ok(ModelReportPayload { year, payload })
 }
 
 #[tauri::command]
@@ -344,6 +364,7 @@ pub fn run() {
             get_usage_trace,
             get_tokens_per_min,
             get_agent_usage,
+            get_model_report,
             set_popover_height,
             tray::update_tray_title
         ]);
