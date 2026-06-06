@@ -1,7 +1,8 @@
 import React from 'react'
 import { clientInitial, getClientStyle } from '../lib/clients'
-import type { AgentUsagePayload, AgentUsageSnapshot } from '../lib/agentUsage'
+import type { AgentUsagePayload, AgentUsageSnapshot, UsageWindow } from '../lib/agentUsage'
 import type { TraceBucket } from '../lib/usage'
+import { computePace, paceLabel, paceEta, isDeficit } from '../lib/usagePace'
 
 interface Props {
   clients: string[]
@@ -9,7 +10,7 @@ interface Props {
   agentUsage: AgentUsagePayload | null
   title?: string
   note?: string
-  // When true, bars fill by amount used (counting up) instead of remaining.
+  // When true, the bar label reads "% used" instead of "% left".
   asUsed?: boolean
 }
 
@@ -26,9 +27,10 @@ const LIMIT_ROWS: Record<string, LimitRow[]> = {
   gemini: [{ label: 'Pro' }, { label: 'Flash' }],
 }
 
-// tokscale's Usage view color-codes each quota bar by how much is left: a
-// healthy window reads green, an exhausting one ambers then reds. When there's
-// no quota signal yet we fall back to the agent's brand color.
+const clamp = (v: number) => Math.min(100, Math.max(0, v))
+
+// tokscale/codexbar Usage view: a quota bar reads green when healthy, ambers
+// under 25% left and reds under 10%. No quota signal → the agent's brand color.
 function gaugeColor(remaining: number | undefined, brand: string): string {
   if (remaining === undefined) return brand
   if (remaining <= 10) return '#ef4444'
@@ -79,11 +81,11 @@ export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent lim
       {visibleClients.length === 0 ? (
         <div className="limits-empty">No supported agents yet</div>
       ) : (
-        <div className={`limits-list${visibleClients.length === 1 ? ' is-single' : ''}`}>
+        <div className="limits-list">
           {visibleClients.map(id => {
             const style = getClientStyle(id)
             const snapshot = snapshots.get(id)
-            const rows = snapshot?.windows.length
+            const rows: LimitRow[] = snapshot?.windows.length
               ? snapshot.windows
               : LIMIT_ROWS[id] ?? [{ label: 'Limit' }]
             const isLive = liveClients.has(id)
@@ -106,33 +108,45 @@ export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent lim
                 )}
                 <div className="limit-windows">
                   {rows.map(row => {
-                    const remaining = 'remainingPercent' in row ? row.remainingPercent : undefined
-                    const used = remaining === undefined ? undefined : 100 - remaining
-                    // Bar fills by used (counting up) or remaining (counting
-                    // down); color always tracks how much quota is left.
-                    const fill = asUsed ? used ?? 0 : remaining ?? 0
-                    const left =
+                    const hasData = row.remainingPercent !== undefined && row.usedPercent !== undefined
+                    const remaining = hasData ? row.remainingPercent! : undefined
+                    const used = hasData ? row.usedPercent! : undefined
+                    const pace = hasData ? computePace(row as UsageWindow) : null
+                    const fill = used ?? 0
+                    const leftLabel =
                       remaining === undefined
                         ? 'No data'
                         : asUsed
-                          ? `${Math.max(0, used as number).toFixed(0)}% used`
-                          : `${Math.max(0, remaining).toFixed(0)}% left`
+                          ? `${Math.round(clamp(used as number))}% used`
+                          : `${Math.round(clamp(remaining))}% left`
+                    const eta = pace ? paceEta(pace) : null
                     return (
                       <div className="limit-window" key={row.label}>
                         <div className="limit-window-meta">
-                          <span>{row.label}</span>
-                          <span>{row.resetText || left}</span>
+                          <span className="limit-window-name">{row.label}</span>
+                          {row.resetText && <span className="limit-window-reset">{row.resetText}</span>}
                         </div>
                         <div className="limit-bar">
                           <div
                             className="limit-bar-fill"
-                            style={{
-                              width: `${Math.min(100, Math.max(0, fill))}%`,
-                              background: gaugeColor(remaining, style.color),
-                            }}
+                            style={{ width: `${clamp(fill)}%`, background: gaugeColor(remaining, style.color) }}
                           />
+                          {pace && (
+                            <span
+                              className={`limit-pace-line${isDeficit(pace.stage) ? ' is-deficit' : ''}`}
+                              style={{ left: `${clamp(pace.expectedUsedPercent)}%` }}
+                              title={`Expected ${Math.round(pace.expectedUsedPercent)}% by now`}
+                            />
+                          )}
                         </div>
-                        {row.resetText && <div className="limit-window-left">{left}</div>}
+                        <div className="limit-window-foot">
+                          <span className="limit-left">{leftLabel}</span>
+                          {pace && (
+                            <span className={`limit-pace${isDeficit(pace.stage) ? ' is-deficit' : ' is-reserve'}`}>
+                              {paceLabel(pace)}{eta ? ` · ${eta}` : ''}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )
                   })}

@@ -576,19 +576,17 @@ html, body, #root {
   font-size: 11px;
   padding: 6px 0;
 }
+/* Full-width, one agent per row — room for each window's usage bar + pace. */
 .limits-list {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-}
-.limits-list.is-single {
-  grid-template-columns: 1fr;
 }
 .limit-agent {
   min-width: 0;
   border: 0.5px solid var(--card-border);
   border-radius: 8px;
-  padding: 8px;
+  padding: 10px 12px;
   background: rgba(120, 120, 128, 0.06);
 }
 .limit-agent-head {
@@ -674,27 +672,51 @@ html, body, #root {
   justify-content: space-between;
   gap: 8px;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  margin-bottom: 3px;
+  margin-bottom: 5px;
 }
+.limit-window-name { color: var(--text-secondary); }
+.limit-window-reset { white-space: nowrap; }
 .limit-bar {
-  height: 6px;
+  position: relative;
+  height: 8px;
   border-radius: 999px;
   background: rgba(120, 120, 128, 0.18);
-  overflow: hidden;
 }
 .limit-bar-fill {
   height: 100%;
-  border-radius: inherit;
+  border-radius: 999px;
   transition: width 200ms ease;
 }
-.limit-window-left {
-  margin-top: 2px;
-  color: var(--text-secondary);
+/* The pace marker: where you'd be if pacing evenly. Green when you're holding
+   reserve / on track, red when you're ahead of pace (burning into a deficit). */
+.limit-pace-line {
+  position: absolute;
+  top: -2px;
+  width: 2px;
+  height: 12px;
+  border-radius: 1px;
+  transform: translateX(-50%);
+  background: #22c55e;
+  box-shadow: 0 0 4px -1px #22c55e;
+}
+.limit-pace-line.is-deficit {
+  background: #ef4444;
+  box-shadow: 0 0 4px -1px #ef4444;
+}
+.limit-window-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 5px;
   font-size: 10px;
   font-weight: 650;
 }
+.limit-left { color: var(--text-secondary); }
+.limit-pace { color: #22c55e; white-space: nowrap; }
+.limit-pace.is-deficit { color: #ef4444; }
+.limit-pace.is-reserve { color: #22c55e; }
 
 /* 2D stacked bar graph — legend is a full-width wrapping row above the chart so
    every stacked model shows, rather than being squeezed into the header. */

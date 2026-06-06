@@ -47,6 +47,9 @@ pub struct UsageWindow {
     remaining_percent: f64,
     resets_at: Option<String>,
     reset_text: Option<String>,
+    /// Total length of this rate-limit window in minutes. Lets the frontend
+    /// derive a usage *pace* (expected vs actual at this point in the window).
+    window_minutes: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -812,6 +815,7 @@ fn map_claude_window(
         remaining_percent: (100.0 - used).max(0.0),
         resets_at: resets_at.map(|date| date.to_rfc3339_opts(SecondsFormat::Millis, true)),
         reset_text: resets_at.map(|date| reset_text(date, now)),
+        window_minutes: claude_window_minutes(label),
     })
 }
 
@@ -843,6 +847,7 @@ fn claude_extra_usage_window(extra: Option<&ClaudeExtraUsage>) -> Option<UsageWi
         remaining_percent: (100.0 - used).max(0.0),
         resets_at: None,
         reset_text,
+        window_minutes: None,
     })
 }
 
@@ -925,7 +930,14 @@ fn map_window(label: &str, window: CodexWindow, now: DateTime<Utc>) -> UsageWind
         remaining_percent: (100.0 - used).max(0.0),
         resets_at: resets_at.map(|date| date.to_rfc3339_opts(SecondsFormat::Millis, true)),
         reset_text: resets_at.map(|date| reset_text(date, now)),
+        window_minutes: (window.limit_window_seconds > 0).then(|| window.limit_window_seconds / 60),
     }
+}
+
+/// Standard Claude window lengths by label, since the API doesn't report them:
+/// the session bucket is 5h, everything else is the 7-day weekly family.
+fn claude_window_minutes(label: &str) -> Option<i64> {
+    Some(if label.eq_ignore_ascii_case("Session") { 300 } else { 10_080 })
 }
 
 fn role(window: Option<&CodexWindow>) -> Option<&'static str> {

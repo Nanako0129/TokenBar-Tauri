@@ -9,6 +9,8 @@ export interface UsageWindow {
   remainingPercent: number
   resetsAt?: string
   resetText?: string
+  /** Total window length in minutes; enables pace (expected vs actual). */
+  windowMinutes?: number
 }
 
 export interface CreditsSnapshot {
