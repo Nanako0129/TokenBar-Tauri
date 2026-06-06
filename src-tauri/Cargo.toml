@@ -33,13 +33,12 @@ tauri-plugin-updater = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-process = "2"
 tauri-plugin-global-shortcut = "2"
-# Bundled SQLite so we don't depend on the system libsqlite3; needed for
-# the Hermes Agent SQLite tail in usage_tail.rs (no schema migrations —
-# read-only queries only).
-rusqlite = { version = "0.32", features = ["bundled"] }
 # Vendored session-parsing/aggregation/pricing core, copied from tokscale
-# (vendor/tokscale-core). Powers the contribution graph across every
-# supported agent so usage_graph.rs no longer hand-rolls per-client parsers.
+# (vendor/tokscale-core). Powers both the contribution graph and the live
+# tokens/min signal across every supported agent, so neither usage_graph.rs
+# nor usage_tail.rs hand-rolls per-client parsing anymore. (tokscale-core
+# carries its own bundled SQLite, so tokcat no longer needs a direct rusqlite
+# dependency.)
 tokscale-core = { path = "../vendor/tokscale-core" }
 
 # Direct access for the native tray icon cache — pre-decode each frame to an

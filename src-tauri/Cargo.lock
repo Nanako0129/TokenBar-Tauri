@@ -4623,7 +4623,6 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "reqwest 0.13.3",
- "rusqlite",
  "serde",
  "serde_json",
  "tauri",
