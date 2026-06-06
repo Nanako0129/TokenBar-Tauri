@@ -19,6 +19,11 @@ export function attachOverlayScrollbar(el: HTMLElement): () => void {
   if (getComputedStyle(el).position === 'static') {
     el.style.position = 'relative'
   }
+  // Hide the native bar via inline style, not only the `.ovs` class: React
+  // rewrites className on some scrollers (e.g. .model-rows toggling
+  // `is-expanded`), which would strip the class and let the native bar return
+  // alongside our thumb — two scrollbars. Inline style survives those updates.
+  el.style.setProperty('scrollbar-width', 'none')
   el.classList.add('ovs')
 
   const thumb = document.createElement('div')
@@ -68,5 +73,6 @@ export function attachOverlayScrollbar(el: HTMLElement): () => void {
     cancelAnimationFrame(raf)
     thumb.remove()
     el.classList.remove('ovs')
+    el.style.removeProperty('scrollbar-width')
   }
 }
