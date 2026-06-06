@@ -1,5 +1,7 @@
 mod animation;
 mod agent_usage;
+mod agents_report;
+mod hourly_report;
 mod model_report;
 #[cfg(target_os = "macos")]
 mod native_tray;
@@ -41,6 +43,18 @@ pub struct ModelReportPayload {
     pub payload: serde_json::Value,
 }
 
+#[derive(Clone, Serialize)]
+pub struct HourlyReportPayload {
+    pub year: String,
+    pub payload: serde_json::Value,
+}
+
+#[derive(Clone, Serialize)]
+pub struct AgentsReportPayload {
+    pub year: String,
+    pub payload: serde_json::Value,
+}
+
 #[tauri::command]
 async fn get_agent_usage() -> Result<agent_usage::AgentUsagePayload, String> {
     Ok(agent_usage::run().await)
@@ -57,6 +71,28 @@ async fn get_model_report(year: String) -> Result<ModelReportPayload, String> {
         .await
         .map_err(|e| format!("join: {}", e))??;
     Ok(ModelReportPayload { year, payload })
+}
+
+/// Per-hour usage breakdown for `year`. Same on-demand/cache-skipping rationale
+/// as `get_model_report`.
+#[tauri::command]
+async fn get_hourly_report(year: String) -> Result<HourlyReportPayload, String> {
+    let year_clone = year.clone();
+    let payload = async_runtime::spawn_blocking(move || hourly_report::run(&year_clone))
+        .await
+        .map_err(|e| format!("join: {}", e))??;
+    Ok(HourlyReportPayload { year, payload })
+}
+
+/// Per-(sub-)agent usage breakdown for `year`. Same on-demand/cache-skipping
+/// rationale as `get_model_report`.
+#[tauri::command]
+async fn get_agents_report(year: String) -> Result<AgentsReportPayload, String> {
+    let year_clone = year.clone();
+    let payload = async_runtime::spawn_blocking(move || agents_report::run(&year_clone))
+        .await
+        .map_err(|e| format!("join: {}", e))??;
+    Ok(AgentsReportPayload { year, payload })
 }
 
 #[tauri::command]
@@ -365,6 +401,8 @@ pub fn run() {
             get_tokens_per_min,
             get_agent_usage,
             get_model_report,
+            get_hourly_report,
+            get_agents_report,
             set_popover_height,
             tray::update_tray_title
         ]);
