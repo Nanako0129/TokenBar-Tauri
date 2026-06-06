@@ -1,4 +1,7 @@
 :root {
+  /* Let WebKit render native UI for the active scheme. */
+  color-scheme: light dark;
+
   /* macOS system palette — light */
   --text: #1d1d1f;
   --text-secondary: #3a3a3c;
@@ -36,6 +39,9 @@
 
   --kbd-pin-bg: rgba(255, 255, 255, 0.74);
   --kbd-pin-border: rgba(0, 0, 0, 0.14);
+
+  --scrollbar-thumb: rgba(0, 0, 0, 0.24);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.40);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -75,10 +81,32 @@
 
     --kbd-pin-bg: rgba(28, 28, 30, 0.74);
     --kbd-pin-border: rgba(255, 255, 255, 0.18);
+
+    --scrollbar-thumb: rgba(255, 255, 255, 0.22);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.40);
   }
 }
 
 * { box-sizing: border-box; }
+
+/* Self-drawn overlay scrollbar (see lib/overlayScrollbar.ts). WKWebView won't
+   reliably repaint ::-webkit-scrollbar on state changes, so enhanced scrollers
+   get `.ovs` (native bar hidden) plus a real thumb element that fades in while
+   scrolling and out after a beat — an ordinary node that repaints normally. */
+.ovs { scrollbar-width: none; }
+.ovs::-webkit-scrollbar { width: 0; height: 0; display: none; }
+.ovs-thumb {
+  position: absolute;
+  right: 3px;
+  width: 6px;
+  border-radius: 999px;
+  background: var(--scrollbar-thumb);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity 0.3s ease;
+}
+.ovs-thumb.show { opacity: 1; }
 
 html, body, #root {
   margin: 0;

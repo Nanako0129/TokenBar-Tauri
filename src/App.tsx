@@ -18,6 +18,7 @@ import { useModelReport } from './hooks/useModelReport'
 import { useHourlyReport } from './hooks/useHourlyReport'
 import { useAgentsReport } from './hooks/useAgentsReport'
 import { buildModelColorMap } from './lib/modelColors'
+import { attachOverlayScrollbar } from './lib/overlayScrollbar'
 import { computeStats } from './lib/stats'
 import { isTauri } from './lib/runtime'
 import { computeTrayTitle, loadSettings, saveSettings, Settings } from './lib/settings'
@@ -488,6 +489,36 @@ export default function App() {
   // window either crops the trace or shows trailing whitespace.
   const pageRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+
+  // Attach the self-drawn overlay scrollbar to the outer page and every inner
+  // scroll list. A MutationObserver re-attaches as views mount/unmount so it
+  // keeps working across tab/view switches and expanding lists.
+  useEffect(() => {
+    const root = pageRef.current
+    if (!root) return
+    const SEL = '.modelsv-rows, .daily-rows, .agents-rows, .hourly-rows, .model-rows'
+    const detach = new Map<Element, () => void>()
+    const sync = () => {
+      const targets: HTMLElement[] = [root, ...Array.from(root.querySelectorAll<HTMLElement>(SEL))]
+      for (const el of targets) {
+        if (!detach.has(el)) detach.set(el, attachOverlayScrollbar(el))
+      }
+      for (const [el, off] of detach) {
+        if (el !== root && !root.contains(el)) {
+          off()
+          detach.delete(el)
+        }
+      }
+    }
+    sync()
+    const mo = new MutationObserver(sync)
+    mo.observe(root, { childList: true, subtree: true })
+    return () => {
+      mo.disconnect()
+      detach.forEach(off => off())
+    }
+  }, [])
+
   useEffect(() => {
     if (!isTauri() || !pageRef.current || !contentRef.current) return
     const page = pageRef.current
