@@ -50,6 +50,16 @@ const REGISTRY: Record<string, RegistryEntry> = {
   mux: { displayName: 'Mux', color: '#06b6d4' },
   crush: { displayName: 'Crush', color: '#ec4899' },
   synthetic: { displayName: 'Synthetic', color: '#64748b', iconRaw: syntheticIcon, iconType: 'full' },
+  // Agents that tokscale-core parses but tokcat had no display style for yet.
+  // No bundled SVG, so getClientStyle's title-case + brand-color disc fallback
+  // renders them until proper icons land.
+  goose: { displayName: 'Goose', color: '#14b8a6' },
+  codebuff: { displayName: 'Codebuff', color: '#8b5cf6' },
+  antigravity: { displayName: 'Antigravity', color: '#3b82f6' },
+  zed: { displayName: 'Zed', color: '#084fff' },
+  kiro: { displayName: 'Kiro', color: '#a855f7' },
+  trae: { displayName: 'Trae', color: '#ef4444' },
+  warp: { displayName: 'Warp', color: '#01a4ff' },
 }
 
 export function getClientStyle(id: string): ClientStyle {
