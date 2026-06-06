@@ -1,0 +1,7 @@
+# build output / deps
+dist/
+.astro/
+node_modules/
+# env
+.env
+.env.production

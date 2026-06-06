@@ -1,0 +1,102 @@
+---
+const base = import.meta.env.BASE_URL
+const views = [
+  { img: 'overview', name: 'Overview', accent: '--p-anthropic', desc: 'The whole picture — contribution chart, agent limits, live session, model breakdown, streaks.' },
+  { img: 'models', name: 'Models', accent: '--p-openai', desc: 'Every model ranked by cost, with its share and a dim In · Out · CR · CW split.' },
+  { img: 'daily', name: 'Daily', accent: '--p-google', desc: 'Active days newest-first — select one to drill into that day’s per-model spend.' },
+  { img: 'hourly', name: 'Hourly', accent: '--p-cursor', desc: 'A 24-hour-of-day rhythm: when in the day your tokens actually get spent.' },
+  { img: 'stats', name: 'Stats', accent: '--p-deepseek', desc: 'Headline summary — total spend, active days, streaks, favorite model, best day.' },
+  { img: 'agents', name: 'Agents', accent: '--p-mistral', desc: 'Sub-agents ranked by cost, with their source apps, message count, and tokens.' },
+]
+---
+
+<section class="section" id="views">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">One popover, six lenses</p>
+      <h2>App tabs filter who. The view switch picks how.</h2>
+      <p>
+        Pick which agents you’re looking at, then choose how to break them down —
+        a multi-view dashboard inspired by
+        <a class="ilink" href="https://github.com/junhoyeo/tokscale">tokscale</a>’s TUI.
+      </p>
+    </div>
+
+    <div class="grid">
+      {views.map((v) => (
+        <article class="card" style={`--ac: var(${v.accent});`}>
+          <div class="frame">
+            <img src={`${base}screenshots/${v.img}.png`} alt={`TokenBar ${v.name} view`} loading="lazy" />
+          </div>
+          <div class="meta">
+            <h3><span class="tag" aria-hidden="true"></span>{v.name}</h3>
+            <p>{v.desc}</p>
+          </div>
+        </article>
+      ))}
+
+      <article class="card wide" style="--ac: var(--p-google);">
+        <div class="frame">
+          <img src={`${base}screenshots/contribution-3d.png`} alt="TokenBar interactive 3D contribution graph" loading="lazy" />
+        </div>
+        <div class="meta">
+          <h3><span class="tag" aria-hidden="true"></span>3D contribution graph</h3>
+          <p>
+            The same year of usage as an interactive GitHub-style tile terrain —
+            orbit it, and the stacked 2D bars are one toggle away. Tokens stack by
+            <strong>model</strong> (provider shades) or by <strong>agent</strong> (brand colors).
+          </p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  .ilink { color: var(--accent-bright); border-bottom: 1px solid color-mix(in oklab, var(--accent) 40%, transparent); }
+  .grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .card {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+  }
+  .card:hover { transform: translateY(-5px); border-color: color-mix(in oklab, var(--ac) 55%, var(--line)); box-shadow: 0 30px 60px -34px color-mix(in oklab, var(--ac) 60%, transparent); }
+  .frame {
+    position: relative; overflow: hidden; background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    aspect-ratio: 16 / 11;
+  }
+  .frame::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 60%, color-mix(in oklab, var(--ac) 14%, transparent));
+    pointer-events: none;
+  }
+  .frame img {
+    width: 100%; height: 100%; object-fit: cover; object-position: top center;
+    transition: transform .4s ease;
+  }
+  .card:hover .frame img { transform: scale(1.04); }
+  .meta { padding: 18px 20px 22px; }
+  .meta h3 { font-size: 19px; display: flex; align-items: center; gap: 10px; }
+  .meta .tag { width: 9px; height: 9px; border-radius: 3px; background: var(--ac); box-shadow: 0 0 10px -1px var(--ac); }
+  .meta p { color: var(--muted); font-size: 14.5px; margin-top: 8px; }
+
+  .card.wide { grid-column: 1 / -1; display: grid; grid-template-columns: 1.4fr 1fr; }
+  .card.wide .frame { aspect-ratio: auto; border-bottom: none; border-right: 1px solid var(--line); }
+  .card.wide .meta { align-self: center; padding: 32px 34px; }
+  .card.wide .meta h3 { font-size: 24px; }
+  .card.wide .meta p { font-size: 15.5px; }
+  .card.wide strong { color: var(--ink-dim); }
+
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+    .card.wide { grid-template-columns: 1fr; }
+    .card.wide .frame { border-right: none; border-bottom: 1px solid var(--line); }
+  }
+</style>

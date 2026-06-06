@@ -1,0 +1,139 @@
+---
+import Heatmap from './Heatmap.astro'
+const brew = 'brew install --cask nanako0129/tokenbar/tokenbar'
+const repo = 'https://github.com/Nanako0129/TokenBar'
+---
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a class="wordmark" href="#top">
+      <span class="dot" aria-hidden="true"></span>TokenBar
+    </a>
+    <nav class="links">
+      <a href="#views">Dashboard</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#install">Install</a>
+      <a href={repo} class="gh">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <Heatmap />
+  <div class="container hero-inner">
+    <p class="eyebrow rise" style="animation-delay:.05s">Local-first · macOS menu bar</p>
+    <h1 class="rise" style="animation-delay:.12s">
+      Know every AI<br />token you <span class="hot">burn</span>.
+    </h1>
+    <p class="lede rise" style="animation-delay:.2s">
+      TokenBar reads your AI coding logs on-device and lays your spend bare across
+      <strong>25+ agents</strong> — Claude Code, Codex, Cursor, OpenCode and more.
+      No telemetry. No account. Just the numbers.
+    </p>
+
+    <div class="cta rise" style="animation-delay:.28s">
+      <button class="brew" id="brew" type="button" title="Copy install command">
+        <span class="prompt">$</span>
+        <code>{brew}</code>
+        <span class="copy" aria-hidden="true">copy</span>
+      </button>
+      <a class="btn btn-ghost" href={`${repo}/releases/latest`}>Download DMG</a>
+    </div>
+
+    <dl class="stats rise" style="animation-delay:.36s">
+      <div><dt class="mono">25+</dt><dd>agents tracked</dd></div>
+      <div><dt class="mono">6</dt><dd>dashboard views</dd></div>
+      <div><dt class="mono">2D · 3D</dt><dd>contribution graph</dd></div>
+      <div><dt class="mono">0</dt><dd>telemetry, accounts</dd></div>
+    </dl>
+  </div>
+</section>
+
+<script is:inline>
+  const b = document.getElementById('brew')
+  if (b) {
+    const cmd = b.querySelector('code')?.textContent ?? ''
+    const label = b.querySelector('.copy')
+    b.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(cmd)
+        if (label) {
+          label.textContent = 'copied'
+          b.classList.add('done')
+          setTimeout(() => { label.textContent = 'copy'; b.classList.remove('done') }, 1600)
+        }
+      } catch {}
+    })
+  }
+</script>
+
+<style>
+  .nav { position: absolute; top: 0; left: 0; right: 0; z-index: 5; padding-top: 22px; }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; }
+  .wordmark {
+    font-family: var(--font-display); font-weight: 800; font-size: 20px;
+    letter-spacing: -0.02em; display: inline-flex; align-items: center; gap: 9px;
+  }
+  .wordmark .dot {
+    width: 12px; height: 12px; border-radius: 3px;
+    background: linear-gradient(135deg, var(--accent-bright), var(--accent-deep));
+    box-shadow: 0 0 12px -1px var(--accent);
+  }
+  .links { display: flex; align-items: center; gap: 26px; font-size: 14px; font-weight: 500; color: var(--muted); }
+  .links a { transition: color .15s; }
+  .links a:hover { color: var(--ink); }
+  .links .gh { font-family: var(--font-mono); color: var(--ink-dim); }
+  @media (max-width: 640px) { .links a:not(.gh) { display: none; } }
+
+  .hero {
+    position: relative;
+    min-height: clamp(620px, 92vh, 940px);
+    display: grid;
+    align-items: center;
+    overflow: hidden;
+  }
+  .hero-inner { position: relative; z-index: 2; text-align: center; padding: 90px 0 40px; }
+  .hero h1 {
+    font-size: clamp(46px, 9.2vw, 116px);
+    margin: 16px auto 0;
+    text-wrap: balance;
+  }
+  .hero h1 .hot {
+    background: linear-gradient(120deg, var(--accent-bright), var(--p-mistral));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .lede {
+    max-width: 620px; margin: 24px auto 0;
+    color: var(--ink-dim); font-size: clamp(17px, 2.2vw, 21px);
+  }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .cta { margin: 38px auto 0; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; align-items: center; }
+  .brew {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: var(--font-mono); font-size: 14px;
+    padding: 12px 14px 12px 16px; border-radius: 999px;
+    background: color-mix(in oklab, var(--panel) 80%, transparent);
+    border: 1px solid var(--line-strong); color: var(--ink-dim);
+    cursor: pointer; backdrop-filter: blur(8px);
+    transition: border-color .18s, transform .18s;
+  }
+  .brew:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .brew .prompt { color: var(--accent); }
+  .brew code { color: var(--ink); }
+  .brew .copy {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .12em;
+    color: var(--faint); border-left: 1px solid var(--line-strong); padding-left: 12px;
+  }
+  .brew.done .copy { color: var(--p-google); }
+  @media (max-width: 560px) { .brew { font-size: 12px; } .brew code { font-size: 11px; } }
+
+  .stats {
+    margin: 54px auto 0; max-width: 720px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    border-top: 1px solid var(--line); padding-top: 26px;
+  }
+  .stats dt { font-size: clamp(22px, 3.4vw, 34px); font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+  .stats dd { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  @media (max-width: 620px) { .stats { grid-template-columns: repeat(2, 1fr); gap: 22px 12px; } }
+</style>

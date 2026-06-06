@@ -1,0 +1,56 @@
+---
+const credits = [
+  {
+    name: 'tokcat',
+    who: 'by handlecusion',
+    href: 'https://github.com/handlecusion/tokcat',
+    body: 'The original macOS menu-bar token monitor TokenBar is forked from. The Tauri shell, native tray, and the spinning menu-bar cat all originate here.',
+    accent: '--p-anthropic',
+  },
+  {
+    name: 'tokscale',
+    who: 'by Junho Yeo',
+    href: 'https://github.com/junhoyeo/tokscale',
+    body: 'Its tokscale-core crate powers TokenBar’s multi-agent session parsing, dedup, and pricing. The multi-view dashboard is inspired by tokscale’s TUI.',
+    accent: '--p-deepseek',
+  },
+]
+---
+
+<section class="section credits">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">Standing on shoulders</p>
+      <h2>Built on great open source.</h2>
+      <p>TokenBar wouldn’t exist without these projects — thank you to their maintainers.</p>
+    </div>
+    <div class="credit-grid">
+      {credits.map((c) => (
+        <a class="credit-card" href={c.href} style={`--ac: var(${c.accent});`}>
+          <div class="ch">
+            <h3>{c.name}</h3>
+            <span class="who mono">{c.who}</span>
+          </div>
+          <p>{c.body}</p>
+          <span class="go mono">View on GitHub ↗</span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .credit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .credit-card {
+    display: block; padding: 30px 28px; border-radius: var(--radius);
+    border: 1px solid var(--line); background: color-mix(in oklab, var(--panel) 60%, transparent);
+    transition: transform .2s, border-color .2s, box-shadow .2s;
+  }
+  .credit-card:hover { transform: translateY(-4px); border-color: color-mix(in oklab, var(--ac) 55%, var(--line)); box-shadow: 0 26px 50px -34px color-mix(in oklab, var(--ac) 60%, transparent); }
+  .ch { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+  .ch h3 { font-size: 26px; color: var(--ac); }
+  .who { font-size: 13px; color: var(--faint); }
+  .credit-card p { color: var(--muted); font-size: 15px; }
+  .go { display: inline-block; margin-top: 18px; font-size: 13px; color: var(--ink-dim); }
+  @media (max-width: 700px) { .credit-grid { grid-template-columns: 1fr; } }
+</style>

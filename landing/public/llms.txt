@@ -1,0 +1,31 @@
+# TokenBar
+
+> A local-first AI token usage monitor for the macOS menu bar. It reads your
+> AI coding session logs on-device and shows what you spend across 25+ coding
+> agents — no telemetry, no account. Built with Tauri 2 (Rust + React/Vite).
+
+## What it is
+- macOS menu-bar app for Apple Silicon, macOS 11+. MIT licensed, free, open source.
+- Tracks 25+ AI coding agents from local logs: Claude Code, Codex CLI, Cursor, OpenCode, Gemini CLI, Copilot CLI, Amp, Droid, Hermes, Goose, Kilo/KiloCode, Roo Code, Qwen, Kimi, Crush, Zed, Kiro, Trae, Warp, and more.
+- Session parsing, dedup, and pricing are delegated to the vendored tokscale-core crate.
+
+## Dashboard views
+- Overview: contribution chart (2D stacked bars + interactive 3D year graph), agent limits, live session trace, model breakdown, streaks.
+- Models: every model ranked by cost with an In/Out/CacheRead/CacheWrite split.
+- Daily: active days, selectable to drill into that day's per-model breakdown.
+- Hourly: a 24-hour-of-day rhythm of token spend.
+- Stats: total spend, active days, streaks, favorite model, best day.
+- Agents: sub-agents ranked by cost with source apps, message count, and tokens.
+
+## Privacy
+- Usage history is read locally from disk. No telemetry, no analytics, no cloud sync, no account.
+- Network access is limited to the GitHub Releases updater manifest and public model-pricing data.
+
+## Install
+- Homebrew: `brew install --cask nanako0129/tokenbar/tokenbar`
+- Or download the DMG from GitHub Releases: https://github.com/Nanako0129/TokenBar/releases
+
+## Links
+- Repository: https://github.com/Nanako0129/TokenBar
+- Forked from tokcat by handlecusion: https://github.com/handlecusion/tokcat
+- Parsing powered by tokscale by Junho Yeo: https://github.com/junhoyeo/tokscale

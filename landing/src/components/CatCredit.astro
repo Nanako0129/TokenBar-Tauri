@@ -1,0 +1,67 @@
+---
+const base = import.meta.env.BASE_URL
+---
+
+<section class="catband">
+  <div class="container cat-inner">
+    <div class="cat-art">
+      <div class="menubar" aria-hidden="true">
+        <span class="mb-dots"><i></i><i></i><i></i></span>
+        <span class="mb-spacer"></span>
+        <img src={`${base}screenshots/menubar.gif`} alt="The TokenBar menu-bar cat spinning beside today's cost" width="240" />
+      </div>
+    </div>
+    <div class="cat-copy">
+      <p class="eyebrow">A gauge, not a mascot</p>
+      <h2>The cat spins faster<br />the more you burn.</h2>
+      <p>
+        Your token throughput as a single glanceable critter: idle when nothing's
+        flowing, whirling when Claude Code is mid-refactor. One look at the menu
+        bar tells you how fast the meter is running — no window required.
+      </p>
+      <p class="credit">
+        The spinning cat is the signature creative touch of the original
+        <a href="https://github.com/handlecusion/tokcat">tokcat</a> by
+        <strong>handlecusion</strong> — kept here with gratitude.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .catband { padding: clamp(64px, 9vw, 120px) 0; position: relative; }
+  .cat-inner {
+    display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 6vw, 80px);
+    align-items: center;
+  }
+  .cat-art { display: grid; place-items: center; }
+  .menubar {
+    width: 100%; max-width: 440px;
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 18px; border-radius: 14px;
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line-strong);
+    box-shadow: var(--shadow);
+  }
+  .mb-dots { display: inline-flex; gap: 7px; }
+  .mb-dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--line-strong); }
+  .mb-dots i:nth-child(1) { background: #ff5f57; }
+  .mb-dots i:nth-child(2) { background: #febc2e; }
+  .mb-dots i:nth-child(3) { background: #28c840; }
+  .mb-spacer { flex: 1; }
+  .menubar img { height: 34px; width: auto; border-radius: 6px; }
+
+  .cat-copy h2 { font-size: clamp(28px, 4.4vw, 46px); margin: 14px 0 16px; }
+  .cat-copy p { color: var(--muted); max-width: 46ch; }
+  .credit {
+    margin-top: 20px; font-size: 14px; color: var(--faint);
+    border-left: 2px solid var(--accent); padding-left: 14px;
+  }
+  .credit a { color: var(--accent-bright); border-bottom: 1px solid color-mix(in oklab, var(--accent) 40%, transparent); }
+  .credit strong { color: var(--ink-dim); }
+
+  @media (max-width: 820px) {
+    .cat-inner { grid-template-columns: 1fr; gap: 36px; }
+    .cat-art { order: -1; }
+  }
+</style>

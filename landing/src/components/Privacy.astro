@@ -1,0 +1,55 @@
+---
+const pillars = [
+  {
+    k: '01',
+    title: 'Reads on-device',
+    body: 'Usage comes from the session logs already on your disk. Nothing is uploaded, nothing is mined — the parse happens locally via the vendored tokscale-core.',
+  },
+  {
+    k: '02',
+    title: 'No telemetry, no account',
+    body: 'No analytics, no sign-up, no cloud sync. TokenBar never phones home with what you do or what you spend.',
+  },
+  {
+    k: '03',
+    title: 'Two requests, that’s it',
+    body: 'Network access is limited to the GitHub Releases updater manifest and public model-pricing data. Updates are signature-verified before install.',
+  },
+]
+---
+
+<section class="section privacy" id="privacy">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">Local-first by construction</p>
+      <h2>Your spend stays on your Mac.</h2>
+      <p>TokenBar is built so the honest answer to “where does my data go?” is: nowhere.</p>
+    </div>
+    <div class="pillars">
+      {pillars.map((p) => (
+        <div class="pillar">
+          <span class="k mono">{p.k}</span>
+          <h3>{p.title}</h3>
+          <p>{p.body}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .pillar {
+    padding: 28px 26px; border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: color-mix(in oklab, var(--panel) 60%, transparent);
+    position: relative;
+  }
+  .pillar .k {
+    font-size: 13px; color: var(--accent); letter-spacing: .1em;
+    display: block; margin-bottom: 18px;
+  }
+  .pillar h3 { font-size: 21px; margin-bottom: 10px; }
+  .pillar p { color: var(--muted); font-size: 15px; }
+  @media (max-width: 820px) { .pillars { grid-template-columns: 1fr; } }
+</style>
