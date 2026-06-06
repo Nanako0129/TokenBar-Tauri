@@ -112,7 +112,15 @@ export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent lim
                     const remaining = hasData ? row.remainingPercent! : undefined
                     const used = hasData ? row.usedPercent! : undefined
                     const pace = hasData ? computePace(row as UsageWindow) : null
-                    const fill = used ?? 0
+                    // The bar fills by used (counting up) or remaining (counting
+                    // down) per the setting; the pace marker sits on the same
+                    // axis so it lines up with the fill either way.
+                    const fill = asUsed ? used ?? 0 : remaining ?? 0
+                    const paceLeft = pace
+                      ? asUsed
+                        ? pace.expectedUsedPercent
+                        : 100 - pace.expectedUsedPercent
+                      : 0
                     const leftLabel =
                       remaining === undefined
                         ? 'No data'
@@ -134,8 +142,8 @@ export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent lim
                           {pace && (
                             <span
                               className={`limit-pace-line${isDeficit(pace.stage) ? ' is-deficit' : ''}`}
-                              style={{ left: `${clamp(pace.expectedUsedPercent)}%` }}
-                              title={`Expected ${Math.round(pace.expectedUsedPercent)}% by now`}
+                              style={{ left: `${clamp(paceLeft)}%` }}
+                              title={`Expected ${Math.round(pace.expectedUsedPercent)}% used by now`}
                             />
                           )}
                         </div>
