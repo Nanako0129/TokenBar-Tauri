@@ -11,6 +11,7 @@ import { useGraphStream } from './hooks/useGraphStream'
 import { useAgentUsage } from './hooks/useAgentUsage'
 import { useModelReport } from './hooks/useModelReport'
 import { ModelBreakdownCard } from './components/ModelBreakdownCard'
+import { buildModelColorMap } from './lib/modelColors'
 import { computeStats } from './lib/stats'
 import { isTauri } from './lib/runtime'
 import { computeTrayTitle, loadSettings, saveSettings, Settings } from './lib/settings'
@@ -49,6 +50,13 @@ export default function App() {
   const { payload, error } = useGraphStream(year)
   const agentUsage = useAgentUsage(refreshTick)
   const modelReport = useModelReport(year, refreshTick)
+  // Shared provider-shade color resolver (tokscale-style): cost-ranks models
+  // within each provider. Drives both the usage chart's model stacks and the
+  // Models card dots so colors stay consistent.
+  const colorFor = useMemo(
+    () => buildModelColorMap(modelReport.report?.entries ?? []),
+    [modelReport.report],
+  )
   const [theme, setTheme] = useState<ThemeName>(() => loadTheme())
   const [isDark, setIsDark] = useState<boolean>(() =>
     typeof window !== 'undefined' && window.matchMedia
@@ -482,7 +490,7 @@ export default function App() {
                     payload={payload}
                     clientIds={presentClients}
                     title="Token Usage"
-                    subtitle="Stacked by agent"
+                    subtitle="Stacked by model"
                     view={usageView}
                     onViewChange={setUsageView}
                     grid={overviewGrid}
@@ -491,6 +499,7 @@ export default function App() {
                     accent={mode.accent}
                     stats={overviewStats}
                     kbdHints={cmdHeld}
+                    colorFor={colorFor}
                   />
                   <AgentLimitsCard clients={dashboardClients} trace={trace} agentUsage={agentUsage.payload} />
                   <UsageTraceCard
@@ -499,7 +508,7 @@ export default function App() {
                     detailed={settings.detailedTrace}
                     title="Live session"
                   />
-                  <ModelBreakdownCard report={modelReport.report} clientIds={presentClients} />
+                  <ModelBreakdownCard report={modelReport.report} clientIds={presentClients} colorFor={colorFor} />
                   <StreaksCard longest={overviewStats.streaks.longest} current={overviewStats.streaks.current} />
                 </div>
               ) : (
@@ -524,8 +533,9 @@ export default function App() {
                     accent={mode.accent}
                     stats={activeStats}
                     kbdHints={cmdHeld}
+                    colorFor={colorFor}
                   />
-                  <ModelBreakdownCard report={modelReport.report} clientIds={[activeTab]} title={`${getClientStyle(activeTab).displayName} models`} />
+                  <ModelBreakdownCard report={modelReport.report} clientIds={[activeTab]} colorFor={colorFor} title={`${getClientStyle(activeTab).displayName} models`} />
                   <StreaksCard longest={activeStats.streaks.longest} current={activeStats.streaks.current} />
                 </div>
               )}

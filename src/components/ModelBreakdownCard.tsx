@@ -2,12 +2,15 @@ import React, { useRef, useState } from 'react'
 import type { ModelReport, ModelReportEntry } from '../lib/types'
 import { getClientStyle } from '../lib/clients'
 import { humanizeTokens, formatCost } from '../lib/format'
+import type { ColorFor } from '../lib/modelColors'
 
 interface Props {
   report: ModelReport | null
   // Restrict to these client ids (Overview passes every present client; a
   // per-client tab passes just its own). Empty = show everything.
   clientIds: string[]
+  // Provider-shade color resolver, shared with the usage chart.
+  colorFor: ColorFor
   title?: string
 }
 
@@ -35,7 +38,7 @@ const TOKEN_KINDS = [
   { key: 'reasoning', label: 'Reasoning', className: 'model-seg-reasoning', pick: (e: ModelReportEntry) => e.reasoning },
 ] as const
 
-export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Props) {
+export function ModelBreakdownCard({ report, clientIds, colorFor, title = 'Models' }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [hover, setHover] = useState<HoverState | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -103,7 +106,7 @@ export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Prop
                 <div className="model-row" key={`${e.client}|${e.model}|${e.provider}`}>
                   <span
                     className="model-source"
-                    style={{ background: style.color }}
+                    style={{ background: colorFor(e.provider, e.model) }}
                     title={`${style.displayName} · ${e.provider}`}
                     aria-hidden="true"
                   />
@@ -154,7 +157,7 @@ export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Prop
           role="status"
         >
           <div className="model-tooltip-head">
-            <span className="model-tooltip-dot" style={{ background: hoverStyle.color }} />
+            <span className="model-tooltip-dot" style={{ background: colorFor(hover.entry.provider, hover.entry.model) }} />
             {hover.entry.model}
           </div>
           <div className="model-tooltip-sub">
