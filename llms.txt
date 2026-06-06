@@ -1,0 +1,32 @@
+# Tokcat
+
+> Tokcat is an AI token usage monitor for the macOS menu bar: a Claude Code usage tracker, Codex usage tracker, Cursor usage dashboard, and LLM cost tracker for AI coding agent usage across Claude Code, Codex CLI, Cursor IDE, OpenCode, Gemini CLI, Copilot CLI, Amp, Droid, and Hermes. It visualizes token usage as a recent 30-day 2D stacked token chart and a full-year 3D GitHub-style contribution graph. Built with Tauri 2 (Rust + React/Vite), distributed via Homebrew and GitHub Releases. Apple Silicon, macOS 11+. MIT licensed.
+
+Tokcat is a Tauri 2 app with an in-process Rust local-usage reader. The menu-bar cat icon shows today's token count, USD cost, totals, live tokens/min, or icon-only mode; clicking it opens a frosted-glass popover with Overview/client tabs, 2D/3D usage views, Codex/Claude agent-limit cards, Live session throughput, streak summaries, themes, and a Settings panel. The app reads supported client logs on-device, stores no telemetry, and requires no Tokcat account.
+
+## Install
+
+- [Homebrew (one command)](https://github.com/handlecusion/tokcat/blob/main/README.md#quick-start): `brew install --cask handlecusion/tokcat/tokcat`
+- [DMG download](https://github.com/handlecusion/tokcat/releases/latest): direct `.dmg` from GitHub Releases
+- [Homebrew tap source](https://github.com/handlecusion/homebrew-tokcat): the cask repo (`Casks/tokcat.rb`)
+
+## Core docs
+
+- [README](https://github.com/handlecusion/tokcat/blob/main/README.md): full English documentation
+- [README (Korean)](https://github.com/handlecusion/tokcat/blob/main/README.ko-KR.md): 한국어 문서
+- [Releases](https://github.com/handlecusion/tokcat/releases): version history and signed artifacts
+- [Updater manifest](https://github.com/handlecusion/tokcat/releases/latest/download/latest.json): consumed by the in-app Tauri updater
+
+## Architecture
+
+- [Tauri shell source](https://github.com/handlecusion/tokcat/tree/main/src-tauri): Rust backend, native tray, animation frames
+- [Frontend source](https://github.com/handlecusion/tokcat/tree/main/src): React + Vite, react-three-fiber 3D graph
+- [tokscale upstream](https://github.com/junhoyeo/tokscale): reference project for supported local log formats
+
+## Supported AI clients
+
+Claude Code, Codex CLI, Cursor IDE, OpenCode, Gemini CLI, Copilot CLI, Amp, Droid, and Hermes.
+
+## Privacy
+
+No telemetry. No cloud sync. No Tokcat account. Network access is limited to the GitHub Releases updater manifest (`latest.json`) checked every 30 minutes and direct Codex/Claude OAuth quota lookups when local credentials are available. Token-usage history is read locally from session logs on disk.

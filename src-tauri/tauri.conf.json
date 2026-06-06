@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Tokcat",
+  "version": "0.1.29",
+  "identifier": "com.handlecusion.tokcat",
+  "build": {
+    "beforeDevCommand": "npm run dev:vite",
+    "devUrl": "http://localhost:4061",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Tokcat",
+        "width": 640,
+        "height": 620,
+        "minWidth": 640,
+        "minHeight": 420,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": false,
+        "skipTaskbar": true,
+        "visible": false,
+        "visibleOnAllWorkspaces": true,
+        "center": true,
+        "shadow": true,
+        "windowEffects": {
+          "effects": ["sidebar"],
+          "state": "followsWindowActiveState",
+          "radius": 14
+        }
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "macOSPrivateApi": true
+  },
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": true,
+    "targets": ["app", "dmg"],
+    "icon": [
+      "icons/icon.png",
+      "icons/icon.icns"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "11.0",
+      "exceptionDomain": "localhost",
+      "dmg": {
+        "background": null,
+        "windowSize": {
+          "width": 660,
+          "height": 400
+        },
+        "appPosition": {
+          "x": 180,
+          "y": 170
+        },
+        "applicationFolderPosition": {
+          "x": 480,
+          "y": 170
+        }
+      }
+    },
+    "category": "DeveloperTool",
+    "shortDescription": "Local AI token usage dashboard",
+    "longDescription": "Tokcat is a menubar app that reads local AI coding session logs directly and visualizes token usage as an interactive 3D contribution graph. Live updates, per-client filters, and customizable menubar title."
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/handlecusion/tokcat/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDk0QUMzNDdENDg2MjUzOUIKUldTYlUySklmVFNzbEFqWkh3WURYdkltOXB3eEZaRnhzYTVwdEVmOExkeSsxa0dXQlpONjZHUnUK"
+    }
+  }
+}
