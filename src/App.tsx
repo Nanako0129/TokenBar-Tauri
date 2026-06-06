@@ -1,29 +1,32 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Panel } from './components/Panel'
 import { HeaderBar } from './components/HeaderBar'
-import { StreaksCard } from './components/StreaksCard'
 import { SettingsPanel } from './components/SettingsPanel'
-import { AgentLimitsCard } from './components/AgentLimitsCard'
 import { DashboardTabs } from './components/DashboardTabs'
-import { UsageBarGraph2D, UsageView, StackBy } from './components/UsageBarGraph2D'
+import { ViewSwitch, AppView } from './components/ViewSwitch'
+import { OverviewView } from './components/views/OverviewView'
+import { ModelsView } from './components/views/ModelsView'
+import { DailyView } from './components/views/DailyView'
+import { StatsView } from './components/views/StatsView'
+import { UsageView, StackBy } from './components/UsageBarGraph2D'
 import { buildGrid } from './lib/grid'
 import { useGraphStream } from './hooks/useGraphStream'
 import { useAgentUsage } from './hooks/useAgentUsage'
 import { useModelReport } from './hooks/useModelReport'
-import { ModelBreakdownCard } from './components/ModelBreakdownCard'
 import { buildModelColorMap } from './lib/modelColors'
 import { computeStats } from './lib/stats'
 import { isTauri } from './lib/runtime'
 import { computeTrayTitle, loadSettings, saveSettings, Settings } from './lib/settings'
 import { TraceBucket, RateUpdate } from './lib/usage'
-import { UsageTraceCard } from './components/UsageTraceCard'
 import { checkForUpdatesSilent, checkForUpdatesInteractive } from './lib/updater'
 import { getTheme, THEMES, ThemeName } from './lib/themes'
-import { getClientStyle } from './lib/clients'
 
 const THEME_KEY = 'tokenbar:theme:v1'
 const USAGE_VIEW_KEY = 'tokenbar:usageview:v1'
 const STACK_BY_KEY = 'tokenbar:stackby:v1'
+const VIEW_KEY = 'tokenbar:view:v1'
+
+const APP_VIEWS: AppView[] = ['overview', 'models', 'daily', 'hourly', 'stats', 'agents']
 
 function loadTheme(): ThemeName {
   try {
@@ -47,6 +50,14 @@ function loadStackBy(): StackBy {
     if (raw === 'model' || raw === 'agent') return raw
   } catch {}
   return 'model'
+}
+
+function loadView(): AppView {
+  try {
+    const raw = localStorage.getItem(VIEW_KEY)
+    if (raw && (APP_VIEWS as string[]).includes(raw)) return raw as AppView
+  } catch {}
+  return 'overview'
 }
 
 function defaultYear(): string {
@@ -75,6 +86,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>('overview')
   const [usageView, setUsageView] = useState<UsageView>(() => loadUsageView())
   const [stackBy, setStackBy] = useState<StackBy>(() => loadStackBy())
+  const [activeView, setActiveView] = useState<AppView>(() => loadView())
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   const [settingsOpen, setSettingsOpen] = useState(false)
 
@@ -102,6 +114,10 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem(STACK_BY_KEY, stackBy) } catch {}
   }, [stackBy])
+
+  useEffect(() => {
+    try { localStorage.setItem(VIEW_KEY, activeView) } catch {}
+  }, [activeView])
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return
@@ -342,10 +358,6 @@ export default function App() {
   // Calendar grids for the 3D usage view, one per visible card. Built from the
   // same per-day token totals the stats already aggregate, so 3D and 2D show
   // identical data for the selected year.
-  const overviewGrid = useMemo(
-    () => buildGrid(year, overviewStats?.perDayMap ?? new Map()),
-    [year, overviewStats],
-  )
   const activeGrid = useMemo(
     () => buildGrid(year, activeStats?.perDayMap ?? new Map()),
     [year, activeStats],
@@ -498,63 +510,57 @@ export default function App() {
                 refreshing={refreshing}
               />
               <DashboardTabs clients={dashboardClients} active={activeTab} onChange={setActiveTab} kbdHints={cmdHeld} />
-              {activeTab === 'overview' ? (
-                <div className="dashboard-stack">
-                  <UsageBarGraph2D
-                    payload={payload}
-                    clientIds={presentClients}
-                    title="Token Usage"
-                    subtitle={stackBy === 'model' ? 'Stacked by model' : 'Stacked by agent'}
-                    view={usageView}
-                    onViewChange={setUsageView}
-                    stackBy={stackBy}
-                    onStackByChange={setStackBy}
-                    grid={overviewGrid}
-                    graphLight={palette.graphLight}
-                    graphDark={palette.graphDark}
-                    accent={mode.accent}
-                    stats={overviewStats}
-                    kbdHints={cmdHeld}
-                    colorFor={colorFor}
-                  />
-                  <AgentLimitsCard clients={dashboardClients} trace={trace} agentUsage={agentUsage.payload} />
-                  <UsageTraceCard
-                    buckets={trace}
-                    windowSecs={600}
-                    detailed={settings.detailedTrace}
-                    title="Live session"
-                  />
-                  <ModelBreakdownCard report={modelReport.report} clientIds={presentClients} colorFor={colorFor} />
-                  <StreaksCard longest={overviewStats.streaks.longest} current={overviewStats.streaks.current} />
-                </div>
-              ) : (
-                <div className="dashboard-stack">
-                  <AgentLimitsCard
-                    clients={[activeTab]}
-                    trace={trace}
-                    agentUsage={agentUsage.payload}
-                    title={`${getClientStyle(activeTab).displayName} limits`}
-                    note="Session / weekly / model limits"
-                  />
-                  <UsageBarGraph2D
-                    payload={payload}
-                    clientIds={[activeTab]}
-                    title="Token Usage"
-                    subtitle={stackBy === 'model' ? 'Stacked by model' : 'Stacked by agent'}
-                    view={usageView}
-                    onViewChange={setUsageView}
-                    stackBy={stackBy}
-                    onStackByChange={setStackBy}
-                    grid={activeGrid}
-                    graphLight={palette.graphLight}
-                    graphDark={palette.graphDark}
-                    accent={mode.accent}
-                    stats={activeStats}
-                    kbdHints={cmdHeld}
-                    colorFor={colorFor}
-                  />
-                  <ModelBreakdownCard report={modelReport.report} clientIds={[activeTab]} colorFor={colorFor} title={`${getClientStyle(activeTab).displayName} models`} />
-                  <StreaksCard longest={activeStats.streaks.longest} current={activeStats.streaks.current} />
+              <ViewSwitch active={activeView} onChange={setActiveView} />
+              {activeView === 'overview' && (
+                <OverviewView
+                  payload={payload}
+                  clientIds={activeClientIds}
+                  stats={activeStats}
+                  grid={activeGrid}
+                  colorFor={colorFor}
+                  modelReport={modelReport.report}
+                  usageView={usageView}
+                  onUsageViewChange={setUsageView}
+                  stackBy={stackBy}
+                  onStackByChange={setStackBy}
+                  graphLight={palette.graphLight}
+                  graphDark={palette.graphDark}
+                  accent={mode.accent}
+                  cmdHeld={cmdHeld}
+                  trace={trace}
+                  detailedTrace={settings.detailedTrace}
+                  agentUsage={agentUsage.payload}
+                  dashboardClients={dashboardClients}
+                  singleClient={activeTab === 'overview' ? null : activeTab}
+                />
+              )}
+              {activeView === 'models' && (
+                <ModelsView report={modelReport.report} clientIds={activeClientIds} colorFor={colorFor} />
+              )}
+              {activeView === 'daily' && (
+                <DailyView payload={payload} clientIds={activeClientIds} colorFor={colorFor} />
+              )}
+              {activeView === 'stats' && (
+                <StatsView
+                  payload={payload}
+                  clientIds={activeClientIds}
+                  stats={activeStats}
+                  grid={activeGrid}
+                  colorFor={colorFor}
+                  modelReport={modelReport.report}
+                  usageView={usageView}
+                  onUsageViewChange={setUsageView}
+                  stackBy={stackBy}
+                  onStackByChange={setStackBy}
+                  graphLight={palette.graphLight}
+                  graphDark={palette.graphDark}
+                  accent={mode.accent}
+                  cmdHeld={cmdHeld}
+                />
+              )}
+              {(activeView === 'hourly' || activeView === 'agents') && (
+                <div className="view-placeholder">
+                  {activeView === 'hourly' ? 'Hourly' : 'Agents'} view coming soon
                 </div>
               )}
             </>
