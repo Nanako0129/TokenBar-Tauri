@@ -16,10 +16,12 @@
   --p-mistral: #fa520f;
   --p-xai: #8b94a3;
 
-  /* primary accent = warm clay */
-  --accent: #da7756;
-  --accent-bright: #f0916f;
-  --accent-deep: #b85c3e;
+  /* primary accent = iris violet (from the avatar's purple X hairpin) */
+  --accent: #7c6cff;
+  --accent-bright: #9b8cff;
+  --accent-deep: #5b46d6;
+  --accent-pink: #ff5d8f; /* secondary, from the avatar's flag/blush pink */
+  --on-accent: #161228; /* dark ink for text sitting on the bright accent */
 
   /* dark canvas (default) */
   --bg: #0a0b0e;
@@ -57,10 +59,12 @@
     --ink-dim: #3c3833;
     --muted: #6b6760;
     --faint: #a7a299;
-    --accent: #c25b3a;
-    --accent-bright: #da7756;
-    --accent-deep: #9d4528;
-    --shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 24px 50px -28px rgba(80, 50, 30, 0.35);
+    --accent: #6849e0;
+    --accent-bright: #7c6cff;
+    --accent-deep: #4f37c4;
+    --accent-pink: #e84d80;
+    --on-accent: #ffffff;
+    --shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 24px 50px -28px rgba(60, 40, 110, 0.35);
   }
 }
 
@@ -134,7 +138,7 @@ a { color: inherit; text-decoration: none; }
 }
 .btn-primary {
   background: linear-gradient(180deg, var(--accent-bright), var(--accent));
-  color: #1a0f0a;
+  color: var(--on-accent);
   box-shadow: 0 10px 28px -10px color-mix(in oklab, var(--accent) 70%, transparent);
 }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -12px color-mix(in oklab, var(--accent) 80%, transparent); }
