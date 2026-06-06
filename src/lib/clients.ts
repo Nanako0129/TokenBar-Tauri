@@ -34,7 +34,7 @@ const REGISTRY: Record<string, RegistryEntry> = {
   claude: { displayName: 'Claude Code', color: '#d97706', iconRaw: claudeIcon, iconType: 'mono' },
   openclaw: { displayName: 'OpenClaw', color: '#dc2626' },
   gemini: { displayName: 'Gemini CLI', color: '#60a5fa', iconRaw: geminiIcon, iconType: 'mono' },
-  opencode: { displayName: 'OpenCode', color: '#1f2937', iconRaw: opencodeIcon, iconType: 'full' },
+  opencode: { displayName: 'OpenCode', color: '#1f2937', iconRaw: opencodeIcon, iconType: 'mono' },
   codex: { displayName: 'Codex CLI', color: '#9ca3af', iconRaw: codexIcon, iconType: 'full' },
   copilot: { displayName: 'Copilot CLI', color: '#1f2937', iconRaw: copilotIcon, iconType: 'mono' },
   cursor: { displayName: 'Cursor IDE', color: '#0ea5e9', iconRaw: cursorIcon, iconType: 'mono' },
