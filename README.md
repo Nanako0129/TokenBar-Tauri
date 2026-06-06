@@ -19,10 +19,10 @@
   <img src="docs/screenshots/overview.png" alt="TokenBar overview" width="380">
 </p>
 
-The menu-bar title is configurable — today's tokens, today's cost, lifetime totals, live tokens/min, or icon-only — and the icon can animate with your live throughput.
+The menu-bar title is configurable — today's tokens, today's cost, lifetime totals, live tokens/min, or icon-only. And the **menu-bar cat spins faster the more tokens you burn** — your throughput as a single glanceable critter. The spinning cat is the signature creative touch of the original [tokcat](https://github.com/handlecusion/tokcat) by **handlecusion**, kept here with gratitude.
 
 <p align="center">
-  <img src="docs/screenshots/menubar.gif" alt="TokenBar in the menu bar" width="320">
+  <img src="docs/screenshots/menubar.gif" alt="The menu-bar cat spinning next to today's cost" width="320">
 </p>
 
 ---
@@ -128,8 +128,9 @@ TokenBar stands on the work of others:
 
 - **[tokcat](https://github.com/handlecusion/tokcat)** by **handlecusion** — the
   original macOS menu-bar token monitor that TokenBar is forked from. The Tauri
-  shell, native tray, menu-bar cat animation, and overall dashboard design
-  originate there.
+  shell, native tray, and overall dashboard design originate there — including
+  the **spinning menu-bar cat that digests your tokens**, handlecusion's
+  signature creative flourish, which TokenBar proudly keeps.
 - **[tokscale](https://github.com/junhoyeo/tokscale)** by **Junho Yeo** — its
   `tokscale-core` crate powers TokenBar's multi-agent session parsing,
   deduplication, and pricing. The multi-view dashboard (Models / Daily / Hourly /
