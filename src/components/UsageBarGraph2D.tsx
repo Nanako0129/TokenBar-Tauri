@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { getClientStyle } from '../lib/clients'
 import { addDays, formatCost, formatMonthDay, isoDate, parseISODate } from '../lib/format'
 import type { Contribution, Stats, TokenBreakdown, UsagePayload } from '../lib/types'
 import type { ColorFor } from '../lib/modelColors'
@@ -7,6 +8,7 @@ import { ContributionGraph3D } from './ContributionGraph3D'
 import { TokenUsageCard } from './TokenUsageCard'
 
 export type UsageView = '2d' | '3d'
+export type StackBy = 'model' | 'agent'
 
 interface Props {
   payload: UsagePayload
@@ -15,6 +17,10 @@ interface Props {
   subtitle?: string
   view: UsageView
   onViewChange: (view: UsageView) => void
+  /** Whether the stack is grouped by model (tokscale-style provider shades) or
+   *  by agent/client (original brand colors). */
+  stackBy: StackBy
+  onStackByChange: (s: StackBy) => void
   grid: GridLayout
   graphLight: string
   graphDark: string
@@ -61,28 +67,45 @@ function tokenTotal(tokens: TokenBreakdown): number {
   )
 }
 
-function dayFromContribution(contribution: Contribution, allowed: Set<string>, colorFor: ColorFor): DayBar {
-  // Group by model (not client) so the stack reads like tokscale. The key is
-  // the model id, scoped within the day; color comes from the shared provider
-  // shade resolver.
+function dayFromContribution(
+  contribution: Contribution,
+  allowed: Set<string>,
+  colorFor: ColorFor,
+  stackBy: StackBy,
+): DayBar {
+  // Group each day either by model (tokscale-style provider shades) or by
+  // agent/client (original brand colors). Color + label follow the mode.
   const grouped = new Map<string, Segment>()
   for (const client of contribution.clients) {
     if (!allowed.has(client.client)) continue
     const tokens = tokenTotal(client.tokens)
     if (tokens <= 0 && (client.cost || 0) <= 0) continue
-    const key = client.modelId || 'unknown'
-    const slot = grouped.get(key) ?? {
-      key,
-      label: client.modelId || 'unknown',
-      color: colorFor(client.providerId, client.modelId || 'unknown'),
-      tokens: 0,
-      cost: 0,
+    const key =
+      stackBy === 'model' ? client.modelId || 'unknown' : client.client
+    let slot = grouped.get(key)
+    if (!slot) {
+      slot =
+        stackBy === 'model'
+          ? {
+              key,
+              label: client.modelId || 'unknown',
+              color: colorFor(client.providerId, client.modelId || 'unknown'),
+              tokens: 0,
+              cost: 0,
+            }
+          : {
+              key,
+              label: getClientStyle(client.client).displayName.replace(/\s+(CLI|Code|IDE)$/i, ''),
+              color: getClientStyle(client.client).color,
+              tokens: 0,
+              cost: 0,
+            }
+      grouped.set(key, slot)
     }
     slot.tokens += tokens
     slot.cost += client.cost || 0
-    grouped.set(key, slot)
   }
-  // Stable stacking order across days: sort by model key.
+  // Stable stacking order across days: sort by key.
   const segments = Array.from(grouped.values()).sort((a, b) => a.key.localeCompare(b.key))
   return {
     date: contribution.date,
@@ -103,6 +126,8 @@ export function UsageBarGraph2D({
   subtitle,
   view,
   onViewChange,
+  stackBy,
+  onStackByChange,
   grid,
   graphLight,
   graphDark,
@@ -117,7 +142,7 @@ export function UsageBarGraph2D({
     const allowed = new Set(clientIds)
     const byDate = new Map<string, DayBar>()
     for (const contribution of payload.contributions) {
-      const day = dayFromContribution(contribution, allowed, colorFor)
+      const day = dayFromContribution(contribution, allowed, colorFor, stackBy)
       if (day.totalTokens > 0 || day.totalCost > 0) byDate.set(day.date, day)
     }
 
@@ -131,7 +156,7 @@ export function UsageBarGraph2D({
       series.push(byDate.get(date) ?? { date, totalTokens: 0, totalCost: 0, segments: [] })
     }
     return series
-  }, [clientIds, payload, colorFor])
+  }, [clientIds, payload, colorFor, stackBy])
 
   const maxTokens = Math.max(1, ...bars.map(b => b.totalTokens))
   const width = 520
@@ -188,6 +213,24 @@ export function UsageBarGraph2D({
           {headSubtitle && <div className="bar2d-sub">{headSubtitle}</div>}
         </div>
         <div className="bar2d-head-right">
+          <div className="bar2d-viewtoggle" role="group" aria-label="Stack grouping">
+            <button
+              type="button"
+              className={`bar2d-viewbtn${stackBy === 'model' ? ' is-active' : ''}`}
+              onClick={() => onStackByChange('model')}
+              aria-pressed={stackBy === 'model'}
+            >
+              Model
+            </button>
+            <button
+              type="button"
+              className={`bar2d-viewbtn${stackBy === 'agent' ? ' is-active' : ''}`}
+              onClick={() => onStackByChange('agent')}
+              aria-pressed={stackBy === 'agent'}
+            >
+              Agent
+            </button>
+          </div>
           <div className="bar2d-viewtoggle" role="group" aria-label="Chart view">
             {kbdHints && <span className="kbd-pin kbd-pin-toggle" aria-hidden="true">⌘G</span>}
             <button

@@ -5,7 +5,7 @@ import { StreaksCard } from './components/StreaksCard'
 import { SettingsPanel } from './components/SettingsPanel'
 import { AgentLimitsCard } from './components/AgentLimitsCard'
 import { DashboardTabs } from './components/DashboardTabs'
-import { UsageBarGraph2D, UsageView } from './components/UsageBarGraph2D'
+import { UsageBarGraph2D, UsageView, StackBy } from './components/UsageBarGraph2D'
 import { buildGrid } from './lib/grid'
 import { useGraphStream } from './hooks/useGraphStream'
 import { useAgentUsage } from './hooks/useAgentUsage'
@@ -23,6 +23,7 @@ import { getClientStyle } from './lib/clients'
 
 const THEME_KEY = 'tokenbar:theme:v1'
 const USAGE_VIEW_KEY = 'tokenbar:usageview:v1'
+const STACK_BY_KEY = 'tokenbar:stackby:v1'
 
 function loadTheme(): ThemeName {
   try {
@@ -38,6 +39,14 @@ function loadUsageView(): UsageView {
     if (raw === '2d' || raw === '3d') return raw
   } catch {}
   return '2d'
+}
+
+function loadStackBy(): StackBy {
+  try {
+    const raw = localStorage.getItem(STACK_BY_KEY)
+    if (raw === 'model' || raw === 'agent') return raw
+  } catch {}
+  return 'model'
 }
 
 function defaultYear(): string {
@@ -65,6 +74,7 @@ export default function App() {
   )
   const [activeTab, setActiveTab] = useState<string>('overview')
   const [usageView, setUsageView] = useState<UsageView>(() => loadUsageView())
+  const [stackBy, setStackBy] = useState<StackBy>(() => loadStackBy())
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   const [settingsOpen, setSettingsOpen] = useState(false)
 
@@ -88,6 +98,10 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem(USAGE_VIEW_KEY, usageView) } catch {}
   }, [usageView])
+
+  useEffect(() => {
+    try { localStorage.setItem(STACK_BY_KEY, stackBy) } catch {}
+  }, [stackBy])
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return
@@ -490,9 +504,11 @@ export default function App() {
                     payload={payload}
                     clientIds={presentClients}
                     title="Token Usage"
-                    subtitle="Stacked by model"
+                    subtitle={stackBy === 'model' ? 'Stacked by model' : 'Stacked by agent'}
                     view={usageView}
                     onViewChange={setUsageView}
+                    stackBy={stackBy}
+                    onStackByChange={setStackBy}
                     grid={overviewGrid}
                     graphLight={palette.graphLight}
                     graphDark={palette.graphDark}
@@ -524,9 +540,11 @@ export default function App() {
                     payload={payload}
                     clientIds={[activeTab]}
                     title="Token Usage"
-                    subtitle="Local token history"
+                    subtitle={stackBy === 'model' ? 'Stacked by model' : 'Stacked by agent'}
                     view={usageView}
                     onViewChange={setUsageView}
+                    stackBy={stackBy}
+                    onStackByChange={setStackBy}
                     grid={activeGrid}
                     graphLight={palette.graphLight}
                     graphDark={palette.graphDark}
