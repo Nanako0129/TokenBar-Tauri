@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import type { ModelReport, ModelReportEntry } from '../lib/types'
 import { getClientStyle } from '../lib/clients'
 import { humanizeTokens, formatCost } from '../lib/format'
@@ -17,23 +17,19 @@ interface Props {
 // distilled to model · source, a token total, and cost.
 const MAX_ROWS = 8
 
-interface Segment {
-  key: string
-  value: number
-  className: string
-}
-
-function segments(e: ModelReportEntry): Segment[] {
-  return [
-    { key: 'input', value: e.input, className: 'model-seg-input' },
-    { key: 'output', value: e.output, className: 'model-seg-output' },
-    { key: 'cacheRead', value: e.cacheRead, className: 'model-seg-cache-read' },
-    { key: 'cacheWrite', value: e.cacheWrite, className: 'model-seg-cache-write' },
-    { key: 'reasoning', value: e.reasoning, className: 'model-seg-reasoning' },
-  ].filter(s => s.value > 0)
-}
+// Single source of truth for the stacked-bar token categories: drives the bar
+// segments, the per-segment hover tooltip, and the legend. The CSS class colors
+// live in styles.css (.model-seg-*).
+const TOKEN_KINDS = [
+  { key: 'input', label: 'Input', className: 'model-seg-input', pick: (e: ModelReportEntry) => e.input },
+  { key: 'output', label: 'Output', className: 'model-seg-output', pick: (e: ModelReportEntry) => e.output },
+  { key: 'cacheRead', label: 'Cache read', className: 'model-seg-cache-read', pick: (e: ModelReportEntry) => e.cacheRead },
+  { key: 'cacheWrite', label: 'Cache write', className: 'model-seg-cache-write', pick: (e: ModelReportEntry) => e.cacheWrite },
+  { key: 'reasoning', label: 'Reasoning', className: 'model-seg-reasoning', pick: (e: ModelReportEntry) => e.reasoning },
+] as const
 
 export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Props) {
+  const [expanded, setExpanded] = useState(false)
   if (!report) return null
 
   const allow = new Set(clientIds)
@@ -41,8 +37,8 @@ export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Prop
     .filter(e => allow.size === 0 || allow.has(e.client))
     .sort((a, b) => b.cost - a.cost || b.total - a.total)
 
-  const top = rows.slice(0, MAX_ROWS)
-  const hidden = rows.length - top.length
+  const visible = expanded ? rows : rows.slice(0, MAX_ROWS)
+  const hidden = rows.length - Math.min(rows.length, MAX_ROWS)
   const totalCost = rows.reduce((s, e) => s + e.cost, 0)
 
   return (
@@ -53,42 +49,72 @@ export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Prop
           {rows.length} model{rows.length === 1 ? '' : 's'} · {formatCost(totalCost)}
         </div>
       </div>
-      {top.length === 0 ? (
+      {rows.length === 0 ? (
         <div className="model-empty">No model usage in this range</div>
       ) : (
-        <div className="model-rows">
-          {top.map(e => {
-            const style = getClientStyle(e.client)
-            const segs = segments(e)
-            return (
-              <div className="model-row" key={`${e.client}|${e.model}|${e.provider}`}>
-                <span
-                  className="model-source"
-                  style={{ background: style.color }}
-                  title={`${style.displayName} · ${e.provider}`}
-                  aria-hidden="true"
-                />
-                <div className="model-meta">
-                  <span className="model-name" title={e.model}>{e.model}</span>
-                  <div className="model-bar" title={`${humanizeTokens(e.total)} tokens`}>
-                    {segs.map(s => (
-                      <span
-                        key={s.key}
-                        className={`model-seg ${s.className}`}
-                        style={{ width: `${(s.value / e.total) * 100}%` }}
-                      />
-                    ))}
+        <>
+          <div className="model-legend" aria-hidden="true">
+            {TOKEN_KINDS.map(k => (
+              <span className="model-legend-item" key={k.key}>
+                <span className={`model-legend-swatch ${k.className}`} />
+                {k.label}
+              </span>
+            ))}
+          </div>
+          <div className={`model-rows${expanded ? ' is-expanded' : ''}`}>
+            {visible.map(e => {
+              const style = getClientStyle(e.client)
+              const segs = TOKEN_KINDS.map(k => ({ ...k, value: k.pick(e) })).filter(s => s.value > 0)
+              // Bar widths use a log scale: cache-read tokens routinely dwarf
+              // input/output/reasoning by 10-100×, so a linear stacked bar would
+              // render everything else as invisible slivers. log1p keeps small
+              // categories visible while preserving rank. Tooltips still report
+              // the true token count and true linear share.
+              const logTotal = segs.reduce((sum, s) => sum + Math.log1p(s.value), 0)
+              return (
+                <div className="model-row" key={`${e.client}|${e.model}|${e.provider}`}>
+                  <span
+                    className="model-source"
+                    style={{ background: style.color }}
+                    title={`${style.displayName} · ${e.provider}`}
+                    aria-hidden="true"
+                  />
+                  <div className="model-meta">
+                    <span className="model-name" title={e.model}>{e.model}</span>
+                    <div className="model-bar" title={`${humanizeTokens(e.total)} tokens total`}>
+                      {segs.map(s => {
+                        const linearPct = (s.value / e.total) * 100
+                        const width = logTotal > 0 ? (Math.log1p(s.value) / logTotal) * 100 : 0
+                        return (
+                          <span
+                            key={s.key}
+                            className={`model-seg ${s.className}`}
+                            style={{ width: `${width}%` }}
+                            title={`${s.label}: ${humanizeTokens(s.value)} (${linearPct.toFixed(0)}%)`}
+                          />
+                        )
+                      })}
+                    </div>
+                  </div>
+                  <div className="model-vals">
+                    <span className="model-tokens">{humanizeTokens(e.total)}</span>
+                    <span className="model-cost">{formatCost(e.cost)}</span>
                   </div>
                 </div>
-                <div className="model-vals">
-                  <span className="model-tokens">{humanizeTokens(e.total)}</span>
-                  <span className="model-cost">{formatCost(e.cost)}</span>
-                </div>
-              </div>
-            )
-          })}
-          {hidden > 0 && <div className="model-more">+{hidden} more</div>}
-        </div>
+              )
+            })}
+          </div>
+          {hidden > 0 && (
+            <button
+              type="button"
+              className="model-toggle"
+              onClick={() => setExpanded(v => !v)}
+              aria-expanded={expanded}
+            >
+              {expanded ? 'Show less' : `Show ${hidden} more`}
+            </button>
+          )}
+        </>
       )}
     </div>
   )

@@ -1271,10 +1271,52 @@ html, body, #root {
   color: var(--text-muted);
   padding: 6px 0;
 }
+.model-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-bottom: 8px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.model-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.model-legend-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
 .model-rows {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+/* When expanded, cap the list height and scroll internally so the popover
+   doesn't grow past the visible screen. */
+.model-rows.is-expanded {
+  max-height: 320px;
+  overflow-y: auto;
+}
+.model-toggle {
+  margin-top: 8px;
+  width: 100%;
+  background: none;
+  border: 0.5px solid var(--card-border);
+  border-radius: 8px;
+  padding: 5px 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+.model-toggle:hover {
+  background: var(--card-border);
+  color: var(--text);
 }
 .model-row {
   display: grid;
