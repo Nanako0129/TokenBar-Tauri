@@ -10,5 +10,9 @@ dist
 src-tauri/target
 src-tauri/gen
 
+# Vendored crates: build artifacts only (source + Cargo.toml are committed)
+vendor/**/target
+vendor/**/Cargo.lock
+
 # Tooling caches
 .playwright-mcp
