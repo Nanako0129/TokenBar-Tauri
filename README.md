@@ -5,6 +5,12 @@
 </p>
 
 <p align="center">
+  <strong>English</strong> ·
+  <a href="README.zh-TW.md">繁體中文</a> ·
+  <a href="README.ko-KR.md">한국어</a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT Licence">
   <img src="https://img.shields.io/badge/macOS-11%2B-black?style=flat-square&logo=apple" alt="macOS 11+">
   <img src="https://img.shields.io/badge/Apple%20Silicon-arm64-success?style=flat-square" alt="Apple Silicon">
