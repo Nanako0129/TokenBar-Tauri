@@ -44,7 +44,7 @@ interface CamState {
   zoom: number
 }
 
-const STORAGE_KEY = 'tokcat:orbit:v1'
+const STORAGE_KEY = 'tokenbar:orbit:v1'
 
 function loadCam(): CamState | null {
   try {

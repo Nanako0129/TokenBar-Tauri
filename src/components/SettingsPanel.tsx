@@ -256,7 +256,7 @@ export function SettingsPanel({ open, onClose, settings, onChange }: Props) {
           {tauri && (
             <section className="settings-section">
               <button className="settings-quit" onClick={quitApp}>
-                Quit Tokcat
+                Quit TokenBar
               </button>
             </section>
           )}

@@ -391,7 +391,7 @@ pub fn run() {
             );
         }
         // Standard menubar popover behavior: hide when the window loses focus
-        // (e.g. user clicks another menubar app or anywhere outside Tokcat).
+        // (e.g. user clicks another menubar app or anywhere outside TokenBar).
         // Skipped while a system dialog is in flight so an ask/message popup
         // stealing focus doesn't dismiss the window underneath it.
         if let Some(window) = handle.get_webview_window("main") {

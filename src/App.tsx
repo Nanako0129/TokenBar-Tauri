@@ -20,8 +20,8 @@ import { checkForUpdatesSilent, checkForUpdatesInteractive } from './lib/updater
 import { getTheme, THEMES, ThemeName } from './lib/themes'
 import { getClientStyle } from './lib/clients'
 
-const THEME_KEY = 'tokcat:theme:v1'
-const USAGE_VIEW_KEY = 'tokcat:usageview:v1'
+const THEME_KEY = 'tokenbar:theme:v1'
+const USAGE_VIEW_KEY = 'tokenbar:usageview:v1'
 
 function loadTheme(): ThemeName {
   try {
@@ -544,23 +544,43 @@ export default function App() {
           <div className="settings-overlay" onClick={() => setAboutOpen(false)} />
           <div className="settings-panel" role="dialog">
             <div className="settings-head">
-              <strong>About Tokcat</strong>
+              <strong>About TokenBar</strong>
               <button className="settings-close" onClick={() => setAboutOpen(false)}>×</button>
             </div>
             <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)' }}>
-              <div><strong>Tokcat</strong> — version {appVersion || 'unknown'}</div>
+              <div><strong>TokenBar</strong> — version {appVersion || 'unknown'}</div>
               <div style={{ marginTop: 8 }}>
                 Native macOS menubar dashboard for local AI token usage.
               </div>
               <div style={{ marginTop: 8 }}>
+                <a
+                  href="https://github.com/Nanako0129/TokenBar"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: 'var(--blue)' }}
+                >
+                  github.com/Nanako0129/TokenBar
+                </a>
+              </div>
+              <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                A fork of{' '}
                 <a
                   href="https://github.com/handlecusion/tokcat"
                   target="_blank"
                   rel="noreferrer"
                   style={{ color: 'var(--blue)' }}
                 >
-                  github.com/handlecusion/tokcat
-                </a>
+                  tokcat
+                </a>{' '}
+                by handlecusion. Session parsing &amp; pricing by{' '}
+                <a
+                  href="https://github.com/junhoyeo/tokscale"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: 'var(--blue)' }}
+                >
+                  tokscale
+                </a>.
               </div>
             </div>
           </div>

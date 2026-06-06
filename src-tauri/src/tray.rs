@@ -14,11 +14,11 @@ pub const POPOVER_SCREEN_MARGIN: f64 = 8.0;
 const POPOVER_TRAY_GAP: f64 = 6.0;
 
 pub fn setup<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
-    let show = MenuItem::with_id(app, "show", "Open Tokcat", true, None::<&str>)?;
+    let show = MenuItem::with_id(app, "show", "Open TokenBar", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Settings…", true, Some("Cmd+,"))?;
     let refresh = MenuItem::with_id(app, "refresh", "Refresh Now", true, Some("Cmd+R"))?;
     let sep1 = PredefinedMenuItem::separator(app)?;
-    let about = MenuItem::with_id(app, "about", "About Tokcat", true, None::<&str>)?;
+    let about = MenuItem::with_id(app, "about", "About TokenBar", true, None::<&str>)?;
     let check_update = MenuItem::with_id(
         app,
         "check-update",
@@ -27,7 +27,7 @@ pub fn setup<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
         None::<&str>,
     )?;
     let sep2 = PredefinedMenuItem::separator(app)?;
-    let quit = MenuItem::with_id(app, "quit", "Quit Tokcat", true, Some("Cmd+Q"))?;
+    let quit = MenuItem::with_id(app, "quit", "Quit TokenBar", true, Some("Cmd+Q"))?;
     let menu = Menu::with_items(
         app,
         &[
@@ -102,9 +102,9 @@ pub fn setup<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
 }
 
 /// Hide the popover and hand keyboard focus back to the app that was in front
-/// before it opened. Plain `w.hide()` (orderOut) leaves Tokcat the active
+/// before it opened. Plain `w.hide()` (orderOut) leaves TokenBar the active
 /// accessory app with no window, so focus lands nowhere; `app.hide()` (NSApp
-/// hide) deactivates Tokcat and reactivates the previously-frontmost app. The
+/// hide) deactivates TokenBar and reactivates the previously-frontmost app. The
 /// `w.hide()` runs first so the toggle's `is_visible()` check is reliable
 /// regardless of how NSApp hide reports window visibility. Used by every
 /// explicit dismiss (Ctrl+Cmd+T, tray-click toggle, ⌘W, Esc) but not the

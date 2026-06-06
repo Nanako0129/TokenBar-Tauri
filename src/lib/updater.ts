@@ -28,7 +28,7 @@ async function promptInstall(update: any): Promise<boolean> {
   const body = update.body ? `\n\n${update.body}` : ''
   return withDialogShield(() =>
     ask(
-      `Tokcat ${update.version} is available.${body}\n\nInstall and restart now?`,
+      `TokenBar ${update.version} is available.${body}\n\nInstall and restart now?`,
       {
         title: 'Update available',
         kind: 'info',
@@ -66,7 +66,7 @@ export async function checkForUpdatesInteractive(): Promise<void> {
   }
   if (!update) {
     await withDialogShield(() =>
-      message("You're on the latest version.", { title: 'Tokcat', kind: 'info' }),
+      message("You're on the latest version.", { title: 'TokenBar', kind: 'info' }),
     )
     return
   }

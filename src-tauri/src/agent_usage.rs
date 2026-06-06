@@ -276,7 +276,7 @@ async fn fetch_codex_inner() -> Result<AgentUsageSnapshot, String> {
         .get(CODEX_USAGE_URL)
         .bearer_auth(&credentials.access_token)
         .header(reqwest::header::ACCEPT, "application/json")
-        .header(reqwest::header::USER_AGENT, "Tokcat");
+        .header(reqwest::header::USER_AGENT, "TokenBar");
     if let Some(account_id) = credentials.account_id.as_deref().filter(|s| !s.is_empty()) {
         request = request.header("ChatGPT-Account-Id", account_id);
     }
@@ -489,7 +489,8 @@ fn load_claude_credentials() -> Result<ClaudeCredentials, String> {
 }
 
 fn load_claude_credentials_from_environment() -> Result<Option<ClaudeCredentials>, String> {
-    let token = std::env::var("TOKCAT_CLAUDE_OAUTH_TOKEN")
+    let token = std::env::var("TOKENBAR_CLAUDE_OAUTH_TOKEN")
+        .or_else(|_| std::env::var("TOKCAT_CLAUDE_OAUTH_TOKEN"))
         .or_else(|_| std::env::var("CODEXBAR_CLAUDE_OAUTH_TOKEN"))
         .ok()
         .map(|value| value.trim().to_string())
@@ -497,7 +498,8 @@ fn load_claude_credentials_from_environment() -> Result<Option<ClaudeCredentials
     let Some(access_token) = token else {
         return Ok(None);
     };
-    let scopes = std::env::var("TOKCAT_CLAUDE_OAUTH_SCOPES")
+    let scopes = std::env::var("TOKENBAR_CLAUDE_OAUTH_SCOPES")
+        .or_else(|_| std::env::var("TOKCAT_CLAUDE_OAUTH_SCOPES"))
         .or_else(|_| std::env::var("CODEXBAR_CLAUDE_OAUTH_SCOPES"))
         .unwrap_or_default()
         .split([',', ' '])

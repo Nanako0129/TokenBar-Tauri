@@ -33,7 +33,7 @@ export const ANIMATION_STYLE_LABELS: Record<AnimationStyle, string> = {
   parrot: 'Party parrot',
 }
 
-const KEY = 'tokcat:settings:v1'
+const KEY = 'tokenbar:settings:v1'
 
 export function loadSettings(): Settings {
   try {

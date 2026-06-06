@@ -19,7 +19,7 @@ export function HeaderBar({ totalTokens, year, years, onYearChange, theme, onThe
   return (
     <div className="header-bar" data-tauri-drag-region>
       <div className="header-brand" data-tauri-drag-region>
-        <img className="brand-logo" src="/tokcat-logo.png" alt="" aria-hidden="true" data-tauri-drag-region />
+        <img className="brand-logo" src="/tokenbar-logo.png" alt="" aria-hidden="true" data-tauri-drag-region />
         <div className="header-title" data-tauri-drag-region>
           <span className="header-num" data-tauri-drag-region>{humanizeTokens(totalTokens)}</span>
           <span className="header-text" data-tauri-drag-region> tokens used in </span>
