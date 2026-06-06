@@ -3,9 +3,12 @@
 # This file is NOT consumed from this repo. Copy it into your tap repo
 # (https://github.com/Nanako0129/homebrew-tokenbar) at `Casks/tokenbar.rb`, then:
 #
-#     brew install --cask Nanako0129/tokenbar/tokenbar
+#     brew tap nanako0129/tokenbar
+#     brew install --cask tokenbar
 #
-# `Nanako0129/tokenbar/tokenbar` = tap `Nanako0129/homebrew-tokenbar`, cask `tokenbar`.
+# Tap `nanako0129/tokenbar` lives at github.com/Nanako0129/homebrew-tokenbar
+# (Homebrew lowercases the owner). Recent Homebrew needs the explicit `brew tap`
+# before a third-party cask installs.
 #
 # Requirements for `brew install` to work:
 #   1. The tap repo must be PUBLIC.

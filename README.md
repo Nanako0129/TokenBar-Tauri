@@ -31,12 +31,15 @@ The menu-bar title is configurable: today's tokens, today's cost, totals, live t
 
 ## Install
 
-> **Note:** the Homebrew tap and signed releases are set up per the maintainer's
-> distribution. Until a release is published, build from source (below).
-
 ```sh
-brew install --cask Nanako0129/tokenbar/tokenbar
+brew tap nanako0129/tokenbar
+brew install --cask tokenbar
 ```
+
+> Homebrew lowercases tap owners, so the tap is `nanako0129/tokenbar` (it lives
+> at [github.com/Nanako0129/homebrew-tokenbar](https://github.com/Nanako0129/homebrew-tokenbar)).
+> Recent Homebrew requires the explicit `brew tap` before installing a
+> third-party cask.
 
 Or grab the `TokenBar_<version>_aarch64.dmg` from [Releases](https://github.com/Nanako0129/TokenBar/releases).
 
