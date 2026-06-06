@@ -68,17 +68,30 @@ const brew = 'brew install --cask nanako0129/tokenbar/tokenbar'
   .term-bar { display: flex; gap: 7px; padding: 11px 14px; border-bottom: 1px solid var(--line); }
   .term-bar i { width: 11px; height: 11px; border-radius: 50%; background: var(--line-strong); }
   .term-bar i:nth-child(1){ background:#ff5f57 } .term-bar i:nth-child(2){ background:#febc2e } .term-bar i:nth-child(3){ background:#28c840 }
-  .term-body { padding: 18px 16px; overflow-x: auto; }
-  .term-body code { font-family: var(--font-mono); font-size: 13.5px; color: var(--ink); white-space: pre; }
-  .term-body .c { color: var(--accent); }
-  .term-copy {
-    width: 100%; margin-top: 14px; padding: 12px; cursor: pointer;
-    background: linear-gradient(180deg, var(--accent-bright), var(--accent)); color: var(--on-accent);
-    border: none; border-radius: 999px; font-size: 14px; font-weight: 600;
-    transition: transform .18s;
+  .term-body { padding: 18px 16px; }
+  .term-body code {
+    font-family: var(--font-mono); font-size: clamp(11px, 3.2vw, 13.5px); color: var(--ink);
+    /* wrap (and break the long tap/cask token) so it never overflows on phones */
+    white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word;
   }
-  .term-copy:hover { transform: translateY(-2px); }
-  .term-copy.ok { background: var(--p-google); }
+  .term-body .c { color: var(--accent); }
+  /* frosted-glass pill like the hero command, tinted violet for the primary action */
+  .term-copy {
+    width: 100%; margin-top: 14px; padding: 13px; cursor: pointer;
+    background: color-mix(in oklab, var(--accent) 16%, color-mix(in oklab, var(--panel) 70%, transparent));
+    color: var(--accent-bright);
+    border: 1px solid color-mix(in oklab, var(--accent) 48%, var(--line-strong));
+    border-radius: 999px; font-size: 14px; font-weight: 600;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    transition: transform .18s, border-color .18s, background .18s, color .18s;
+  }
+  .term-copy:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 26%, color-mix(in oklab, var(--panel) 60%, transparent));
+    color: var(--ink);
+  }
+  .term-copy.ok { color: var(--p-google); border-color: color-mix(in oklab, var(--p-google) 55%, var(--line-strong)); }
   .btn.full { width: 100%; justify-content: center; margin-top: 12px; }
   .src { margin-top: 16px; text-align: center; font-size: 13px; color: var(--faint); }
   .src a { color: var(--ink-dim); border-bottom: 1px solid var(--line-strong); }
