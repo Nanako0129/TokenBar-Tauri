@@ -4,9 +4,9 @@
 
 ## Install
 
-- [Homebrew](https://github.com/Nanako0129/TokenBar#quick-start): `brew install --cask nyanako/tokenbar/tokenbar`
+- [Homebrew](https://github.com/Nanako0129/TokenBar#quick-start): `brew install --cask Nanako0129/tokenbar/tokenbar`
 - [DMG download](https://github.com/Nanako0129/TokenBar/releases/latest)
-- [Homebrew tap repository](https://github.com/nyanako/homebrew-tokenbar)
+- [Homebrew tap repository](https://github.com/Nanako0129/homebrew-tokenbar)
 
 ## Documentation
 

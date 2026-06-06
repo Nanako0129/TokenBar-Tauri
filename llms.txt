@@ -6,9 +6,9 @@ TokenBar is a Tauri 2 app with an in-process Rust local-usage reader. The menu-b
 
 ## Install
 
-- [Homebrew (one command)](https://github.com/Nanako0129/TokenBar/blob/main/README.md#quick-start): `brew install --cask nyanako/tokenbar/tokenbar`
+- [Homebrew (one command)](https://github.com/Nanako0129/TokenBar/blob/main/README.md#quick-start): `brew install --cask Nanako0129/tokenbar/tokenbar`
 - [DMG download](https://github.com/Nanako0129/TokenBar/releases/latest): direct `.dmg` from GitHub Releases
-- [Homebrew tap source](https://github.com/nyanako/homebrew-tokenbar): the cask repo (`Casks/tokenbar.rb`)
+- [Homebrew tap source](https://github.com/Nanako0129/homebrew-tokenbar): the cask repo (`Casks/tokenbar.rb`)
 
 ## Core docs
 

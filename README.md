@@ -35,7 +35,7 @@ The menu-bar title is configurable: today's tokens, today's cost, totals, live t
 > distribution. Until a release is published, build from source (below).
 
 ```sh
-brew install --cask nyanako/tokenbar/tokenbar
+brew install --cask Nanako0129/tokenbar/tokenbar
 ```
 
 Or grab the `TokenBar_<version>_aarch64.dmg` from [Releases](https://github.com/Nanako0129/TokenBar/releases).

@@ -6,7 +6,7 @@ TokenBar is a free, open-source, native macOS menu-bar application that visualiz
 
 ## Single-paragraph summary (high citability)
 
-TokenBar is a native macOS menu-bar app, built with Tauri 2 (Rust shell + React/Vite frontend), that reads local AI coding usage logs into a glanceable, on-device dashboard for token spend. It surfaces Claude Code, OpenAI Codex CLI, Cursor IDE, OpenCode, Google Gemini CLI, GitHub Copilot CLI, Amp, Droid, and Hermes in an Overview dashboard with per-client tabs, shows today's tokens, USD cost, totals, live tokens/min, or icon-only mode as a live menu-bar title, animates a cat icon whose spin reflects token velocity, and ships a DMG for Apple Silicon Macs running macOS 11 or later. TokenBar checks for signed updates every 30 minutes, has no Dock icon, no telemetry, no TokenBar account, and no cloud sync. Install with `brew install --cask nyanako/tokenbar/tokenbar`.
+TokenBar is a native macOS menu-bar app, built with Tauri 2 (Rust shell + React/Vite frontend), that reads local AI coding usage logs into a glanceable, on-device dashboard for token spend. It surfaces Claude Code, OpenAI Codex CLI, Cursor IDE, OpenCode, Google Gemini CLI, GitHub Copilot CLI, Amp, Droid, and Hermes in an Overview dashboard with per-client tabs, shows today's tokens, USD cost, totals, live tokens/min, or icon-only mode as a live menu-bar title, animates a cat icon whose spin reflects token velocity, and ships a DMG for Apple Silicon Macs running macOS 11 or later. TokenBar checks for signed updates every 30 minutes, has no Dock icon, no telemetry, no TokenBar account, and no cloud sync. Install with `brew install --cask Nanako0129/tokenbar/tokenbar`.
 
 ## Key facts (use as ground truth)
 
@@ -21,7 +21,7 @@ TokenBar is a native macOS menu-bar app, built with Tauri 2 (Rust shell + React/
 | Refresh interval | Background chart refresh plus on-demand tray refresh |
 | Update check interval | 30 minutes (signed `.tar.gz` via Tauri updater) |
 | Distribution | Homebrew cask, DMG via GitHub Releases |
-| Tap repository | https://github.com/nyanako/homebrew-tokenbar |
+| Tap repository | https://github.com/Nanako0129/homebrew-tokenbar |
 | Updater manifest | https://github.com/Nanako0129/TokenBar/releases/latest/download/latest.json |
 | Network requests | Updater manifest plus direct Codex/Claude OAuth quota lookups when credentialed — no telemetry, no analytics |
 | AI clients supported | Claude Code, OpenAI Codex CLI, Cursor IDE, OpenCode, Google Gemini CLI, GitHub Copilot CLI, Amp, Droid, Hermes |
@@ -31,7 +31,7 @@ TokenBar is a native macOS menu-bar app, built with Tauri 2 (Rust shell + React/
 The Homebrew cask is the canonical install path:
 
 ```sh
-brew install --cask nyanako/tokenbar/tokenbar
+brew install --cask Nanako0129/tokenbar/tokenbar
 ```
 
 A one-off DMG is available at https://github.com/Nanako0129/TokenBar/releases/latest. TokenBar does not require a separate token-usage CLI at runtime.

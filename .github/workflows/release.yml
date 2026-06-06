@@ -157,7 +157,7 @@ jobs:
       - name: Checkout homebrew-tokenbar
         uses: actions/checkout@v4
         with:
-          repository: nyanako/homebrew-tokenbar
+          repository: Nanako0129/homebrew-tokenbar
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           path: tap
 
