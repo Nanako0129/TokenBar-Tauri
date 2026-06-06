@@ -24,6 +24,16 @@ const LIMIT_ROWS: Record<string, LimitRow[]> = {
   gemini: [{ label: 'Pro' }, { label: 'Flash' }],
 }
 
+// tokscale's Usage view color-codes each quota bar by how much is left: a
+// healthy window reads green, an exhausting one ambers then reds. When there's
+// no quota signal yet we fall back to the agent's brand color.
+function gaugeColor(remaining: number | undefined, brand: string): string {
+  if (remaining === undefined) return brand
+  if (remaining <= 10) return '#ef4444'
+  if (remaining <= 25) return '#f59e0b'
+  return '#22c55e'
+}
+
 function normalizeTraceClient(id: string): string {
   if (id === 'claude-code') return 'claude'
   if (id === 'codex-cli') return 'codex'
@@ -108,7 +118,7 @@ export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent lim
                             className="limit-bar-fill"
                             style={{
                               width: `${Math.min(100, Math.max(0, fill))}%`,
-                              background: style.color,
+                              background: gaugeColor(remaining, style.color),
                             }}
                           />
                         </div>
