@@ -91,12 +91,14 @@ export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Prop
             {visible.map(e => {
               const style = getClientStyle(e.client)
               const segs = TOKEN_KINDS.map(k => ({ ...k, value: k.pick(e) })).filter(s => s.value > 0)
-              // Bar widths use a log scale: cache-read tokens routinely dwarf
-              // input/output/reasoning by 10-100×, so a linear stacked bar would
-              // render everything else as invisible slivers. log1p keeps small
-              // categories visible while preserving rank. The tooltip reports
+              // Bar widths use a square-root scale: cache-read tokens routinely
+              // dwarf input/output/reasoning by 10-100×, so a linear stacked bar
+              // would render everything else as invisible slivers, while a log
+              // scale flattens everything to near-equal widths. sqrt is the
+              // middle ground — the dominant category still reads clearly as the
+              // largest, but small categories stay visible. The tooltip reports
               // the true token count and true linear share.
-              const logTotal = segs.reduce((sum, s) => sum + Math.log1p(s.value), 0)
+              const scaleTotal = segs.reduce((sum, s) => sum + Math.sqrt(s.value), 0)
               return (
                 <div className="model-row" key={`${e.client}|${e.model}|${e.provider}`}>
                   <span
@@ -114,7 +116,7 @@ export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Prop
                       onMouseLeave={() => setHover(null)}
                     >
                       {segs.map(s => {
-                        const width = logTotal > 0 ? (Math.log1p(s.value) / logTotal) * 100 : 0
+                        const width = scaleTotal > 0 ? (Math.sqrt(s.value) / scaleTotal) * 100 : 0
                         return (
                           <span
                             key={s.key}
