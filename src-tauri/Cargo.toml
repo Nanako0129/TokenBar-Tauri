@@ -1,6 +1,6 @@
 [package]
 name = "tokenbar"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2021"
 description = "Native macOS menubar dashboard for local AI token usage"
 # TokenBar is a fork of handlecusion's tokcat; original authorship is credited
