@@ -10,6 +10,8 @@ import opencodeIcon from '../assets/agent-icons/opencode.svg?raw'
 import droidIcon from '../assets/agent-icons/droid.svg?raw'
 import kilocodeIcon from '../assets/agent-icons/kilocode.svg?raw'
 import syntheticIcon from '../assets/agent-icons/synthetic.svg?raw'
+import warpIcon from '../assets/agent-icons/warp.svg?raw'
+import kimiIcon from '../assets/agent-icons/kimi.svg?raw'
 
 // 'mono' icons are single-color glyphs we tint white over the brand-color disc.
 // 'full' icons carry their own design (background + colors) and fill the disc as-is.
@@ -42,7 +44,7 @@ const REGISTRY: Record<string, RegistryEntry> = {
   droid: { displayName: 'Droid', color: '#22c55e', iconRaw: droidIcon, iconType: 'full' },
   hermes: { displayName: 'Hermes', color: '#a78bfa' },
   pi: { displayName: 'Pi', color: '#f472b6', iconRaw: piIcon, iconType: 'mono' },
-  kimi: { displayName: 'Kimi CLI', color: '#fbbf24' },
+  kimi: { displayName: 'Kimi CLI', color: '#fbbf24', iconRaw: kimiIcon, iconType: 'mono' },
   qwen: { displayName: 'Qwen CLI', color: '#7c3aed', iconRaw: qwenIcon, iconType: 'mono' },
   roocode: { displayName: 'Roo Code', color: '#ef4444' },
   kilocode: { displayName: 'KiloCode', color: '#f97316', iconRaw: kilocodeIcon, iconType: 'full' },
@@ -59,7 +61,7 @@ const REGISTRY: Record<string, RegistryEntry> = {
   zed: { displayName: 'Zed', color: '#084fff' },
   kiro: { displayName: 'Kiro', color: '#a855f7' },
   trae: { displayName: 'Trae', color: '#ef4444' },
-  warp: { displayName: 'Warp', color: '#01a4ff' },
+  warp: { displayName: 'Warp', color: '#01a4ff', iconRaw: warpIcon, iconType: 'mono' },
 }
 
 export function getClientStyle(id: string): ClientStyle {
