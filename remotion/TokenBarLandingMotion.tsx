@@ -59,7 +59,7 @@ const cells = Array.from({ length: 14 * 8 }, (_, i) => {
   }
 })
 
-export const TokcatLandingMotion = () => {
+export const TokenBarLandingMotion = () => {
   const frame = useCurrentFrame()
   const drift = interpolate(frame, [0, 210], [0, -42], {
     extrapolateLeft: 'clamp',

@@ -1,5 +1,5 @@
 {
-  "name": "tokcat",
+  "name": "tokenbar",
   "version": "0.1.29",
   "private": true,
   "type": "module",
@@ -11,12 +11,12 @@
     "dev:vite": "node server.js",
     "build": "vite build",
     "check:seo": "python3 scripts/check_seo.py",
-    "render:landing": "remotion render remotion/index.ts TokcatLandingMotion docs/tokcat-landing-motion.mp4 --codec=h264 --crf=26 --overwrite",
+    "render:landing": "remotion render remotion/index.ts TokenBarLandingMotion docs/tokenbar-landing-motion.mp4 --codec=h264 --crf=26 --overwrite",
     "preview": "vite preview --port 4061",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "install:local": "tauri build && pkill -f '/Applications/Tokcat.app/Contents/MacOS' || true && rm -rf /Applications/Tokcat.app && cp -R src-tauri/target/release/bundle/macos/Tokcat.app /Applications/ && open -na /Applications/Tokcat.app"
+    "install:local": "tauri build && pkill -f '/Applications/TokenBar.app/Contents/MacOS' || true && rm -rf /Applications/TokenBar.app && cp -R src-tauri/target/release/bundle/macos/TokenBar.app /Applications/ && open -na /Applications/TokenBar.app"
   },
   "dependencies": {
     "@react-three/drei": "^9.117.3",

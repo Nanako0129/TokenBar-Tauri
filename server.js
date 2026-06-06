@@ -122,7 +122,7 @@ function mockGraph(year) {
   return {
     meta: {
       generatedAt,
-      version: 'tokcat-dev',
+      version: 'tokenbar-dev',
       dateRange,
     },
     summary: {
@@ -156,7 +156,7 @@ function mockAgentUsage() {
         clientId: 'codex',
         source: 'oauth',
         updatedAt: now,
-        identity: { email: 'dev@tokcat.local', plan: 'Team' },
+        identity: { email: 'dev@tokenbar.local', plan: 'Team' },
         windows: [
           { label: 'Session', usedPercent: 63, remainingPercent: 37, resetText: 'resets in 2h 14m' },
           { label: 'Weekly', usedPercent: 41, remainingPercent: 59, resetText: 'resets Tue' },
@@ -317,5 +317,5 @@ const vite = await createViteServer({
 app.use(vite.middlewares)
 
 httpServer.listen(PORT, () => {
-  console.log(`[tokcat] dev server listening on http://localhost:${PORT}`)
+  console.log(`[tokenbar] dev server listening on http://localhost:${PORT}`)
 })

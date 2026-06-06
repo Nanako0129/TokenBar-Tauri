@@ -10,7 +10,7 @@
 use serde::Serialize;
 use serde_json::Value;
 
-const VERSION: &str = concat!("tokcat-core/", env!("CARGO_PKG_VERSION"));
+const VERSION: &str = concat!("tokenbar-core/", env!("CARGO_PKG_VERSION"));
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -137,7 +137,7 @@ fn normalize_year(year: &str) -> Result<Option<String>, String> {
 /// Field renames: tokscale uses flat `date_range_start/end` and
 /// `range_start/end`, the frontend expects nested `{ start, end }`. Extra
 /// tokscale fields (`active_time_ms`, `time_metrics`, `processing_time_ms`)
-/// are intentionally dropped. The reported `version` stays branded as tokcat.
+/// are intentionally dropped. The reported `version` is branded as tokenbar.
 fn map_graph(graph: tokscale_core::GraphResult) -> TokenContributionData {
     TokenContributionData {
         meta: ExportMeta {
