@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression checks for Tokcat public SEO surfaces."""
+"""Regression checks for TokenBar public SEO surfaces."""
 
 from __future__ import annotations
 
@@ -106,7 +106,7 @@ def test_readme_has_category_search_phrases() -> None:
     text = (ROOT / "README.md").read_text(encoding="utf-8")
     for phrase in README_REQUIRED_PHRASES:
         assert_contains(text, phrase, "README.md")
-    assert "## Search phrases" in text or "## Find Tokcat by use case" in text, (
+    assert "## Search phrases" in text or "## Find TokenBar by use case" in text, (
         "README.md should include a use-case/search phrase section"
     )
 

@@ -65,7 +65,7 @@ jobs:
           VERSION: ${{ steps.meta.outputs.version }}
         run: |
           set -euo pipefail
-          DMG="src-tauri/target/release/bundle/dmg/Tokcat_${VERSION}_aarch64.dmg"
+          DMG="src-tauri/target/release/bundle/dmg/TokenBar_${VERSION}_aarch64.dmg"
           DMG_RW="${DMG%.dmg}.rw.dmg"
           DMG_MNT="$(mktemp -d)"
           hdiutil convert "$DMG" -format UDRW -o "$DMG_RW" -ov >/dev/null
@@ -84,7 +84,7 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          SIG_FILE="src-tauri/target/release/bundle/macos/Tokcat.app.tar.gz.sig"
+          SIG_FILE="src-tauri/target/release/bundle/macos/TokenBar.app.tar.gz.sig"
           LATEST_JSON="src-tauri/target/release/bundle/latest.json"
           NOTES_FILE="src-tauri/target/release/bundle/release-notes.md"
           SIGNATURE="$(cat "$SIG_FILE")"
@@ -97,10 +97,10 @@ jobs:
           if [[ "$TAG_TYPE" == "tag" ]]; then
             gh api "repos/${GITHUB_REPOSITORY}/git/tags/${TAG_SHA}" --jq '.message' > "$NOTES_FILE"
           else
-            printf 'Tokcat %s\n' "$VERSION" > "$NOTES_FILE"
+            printf 'TokenBar %s\n' "$VERSION" > "$NOTES_FILE"
           fi
           if [[ ! -s "$NOTES_FILE" ]]; then
-            printf 'Tokcat %s\n' "$VERSION" > "$NOTES_FILE"
+            printf 'TokenBar %s\n' "$VERSION" > "$NOTES_FILE"
           fi
           NOTES="$(cat "$NOTES_FILE")"
 
@@ -109,7 +109,7 @@ jobs:
             --arg notes "$NOTES" \
             --arg pub_date "$PUB_DATE" \
             --arg signature "$SIGNATURE" \
-            --arg url "$DOWNLOAD_BASE/Tokcat.app.tar.gz" \
+            --arg url "$DOWNLOAD_BASE/TokenBar.app.tar.gz" \
             '{version:$version, notes:$notes, pub_date:$pub_date, platforms:{"darwin-aarch64":{signature:$signature, url:$url}}}' \
             > "$LATEST_JSON"
           cat "$LATEST_JSON"
@@ -121,21 +121,21 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          DMG="src-tauri/target/release/bundle/dmg/Tokcat_${VERSION}_aarch64.dmg"
-          APP_TGZ="src-tauri/target/release/bundle/macos/Tokcat.app.tar.gz"
-          APP_SIG="src-tauri/target/release/bundle/macos/Tokcat.app.tar.gz.sig"
+          DMG="src-tauri/target/release/bundle/dmg/TokenBar_${VERSION}_aarch64.dmg"
+          APP_TGZ="src-tauri/target/release/bundle/macos/TokenBar.app.tar.gz"
+          APP_SIG="src-tauri/target/release/bundle/macos/TokenBar.app.tar.gz.sig"
           LATEST_JSON="src-tauri/target/release/bundle/latest.json"
           NOTES_FILE="src-tauri/target/release/bundle/release-notes.md"
           if [[ -s "$NOTES_FILE" ]]; then
             gh release create "$TAG" \
               "$DMG" "$APP_TGZ" "$APP_SIG" "$LATEST_JSON" \
-              --title "Tokcat $VERSION" \
+              --title "TokenBar $VERSION" \
               --notes-file "$NOTES_FILE"
           else
             gh release create "$TAG" \
               "$DMG" "$APP_TGZ" "$APP_SIG" "$LATEST_JSON" \
-              --title "Tokcat $VERSION" \
-              --notes "Tokcat $VERSION"
+              --title "TokenBar $VERSION" \
+              --notes "TokenBar $VERSION"
           fi
 
       - name: Compute DMG sha256
@@ -144,7 +144,7 @@ jobs:
           VERSION: ${{ steps.meta.outputs.version }}
         run: |
           set -euo pipefail
-          DMG="src-tauri/target/release/bundle/dmg/Tokcat_${VERSION}_aarch64.dmg"
+          DMG="src-tauri/target/release/bundle/dmg/TokenBar_${VERSION}_aarch64.dmg"
           SHA=$(shasum -a 256 "$DMG" | awk '{print $1}')
           echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
           echo "DMG sha256: $SHA"
@@ -154,10 +154,10 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout homebrew-tokcat
+      - name: Checkout homebrew-tokenbar
         uses: actions/checkout@v4
         with:
-          repository: handlecusion/homebrew-tokcat
+          repository: nyanako/homebrew-tokenbar
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           path: tap
 
@@ -167,7 +167,7 @@ jobs:
           SHA256: ${{ needs.release.outputs.sha256 }}
         run: |
           set -euo pipefail
-          CASK="tap/Casks/tokcat.rb"
+          CASK="tap/Casks/tokenbar.rb"
           if [[ ! -f "$CASK" ]]; then
             echo "::error::cask not found at $CASK"
             exit 1
@@ -198,12 +198,12 @@ jobs:
           VERSION: ${{ needs.release.outputs.version }}
         run: |
           set -euo pipefail
-          git config user.name "tokcat-release-bot"
-          git config user.email "tokcat-release-bot@users.noreply.github.com"
+          git config user.name "tokenbar-release-bot"
+          git config user.email "tokenbar-release-bot@users.noreply.github.com"
           if git diff --quiet; then
             echo "no changes to commit"
             exit 0
           fi
-          git add Casks/tokcat.rb
-          git commit -m "Bump tokcat cask to ${VERSION}"
+          git add Casks/tokenbar.rb
+          git commit -m "Bump tokenbar cask to ${VERSION}"
           git push origin HEAD:main

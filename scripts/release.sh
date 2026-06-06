@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build, sign, and publish a Tokcat release.
+# Build, sign, and publish a TokenBar release.
 #
 # Usage:
 #   scripts/release.sh <version> "<release notes>"
@@ -8,8 +8,8 @@
 #   scripts/release.sh 0.1.3 "Add auto-update support."
 #
 # Prerequisites:
-#   - gh CLI authenticated for handlecusion/tokcat
-#   - Updater private key at ~/.tauri/tokcat.key
+#   - gh CLI authenticated for Nanako0129/tokenbar
+#   - Updater private key at ~/.tauri/tokenbar_updater.key
 #   - package.json / Cargo.toml / tauri.conf.json already bumped to <version>
 #     and committed on main.
 
@@ -23,7 +23,7 @@ if [[ -z "$VERSION" || -z "$NOTES" ]]; then
   exit 1
 fi
 
-KEY_PATH="${TAURI_SIGNING_PRIVATE_KEY_PATH:-$HOME/.tauri/tokcat.key}"
+KEY_PATH="${TAURI_SIGNING_PRIVATE_KEY_PATH:-$HOME/.tauri/tokenbar_updater.key}"
 if [[ ! -f "$KEY_PATH" ]]; then
   echo "signing key not found at $KEY_PATH" >&2
   exit 1
@@ -41,9 +41,9 @@ fi
 
 TAG="v$VERSION"
 BUNDLE_DIR="src-tauri/target/release/bundle"
-DMG="$BUNDLE_DIR/dmg/Tokcat_${VERSION}_aarch64.dmg"
-APP_TGZ="$BUNDLE_DIR/macos/Tokcat.app.tar.gz"
-APP_SIG="$BUNDLE_DIR/macos/Tokcat.app.tar.gz.sig"
+DMG="$BUNDLE_DIR/dmg/TokenBar_${VERSION}_aarch64.dmg"
+APP_TGZ="$BUNDLE_DIR/macos/TokenBar.app.tar.gz"
+APP_SIG="$BUNDLE_DIR/macos/TokenBar.app.tar.gz.sig"
 
 echo "==> Building release with updater artifacts"
 TAURI_SIGNING_PRIVATE_KEY="$(cat "$KEY_PATH")" \
@@ -74,7 +74,7 @@ rm -f "$DMG_RW"
 
 SIGNATURE="$(cat "$APP_SIG")"
 PUB_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-DOWNLOAD_BASE="https://github.com/handlecusion/tokcat/releases/download/$TAG"
+DOWNLOAD_BASE="https://github.com/Nanako0129/TokenBar/releases/download/$TAG"
 
 LATEST_JSON="$BUNDLE_DIR/latest.json"
 cat > "$LATEST_JSON" <<EOF
@@ -85,7 +85,7 @@ cat > "$LATEST_JSON" <<EOF
   "platforms": {
     "darwin-aarch64": {
       "signature": "$SIGNATURE",
-      "url": "$DOWNLOAD_BASE/Tokcat.app.tar.gz"
+      "url": "$DOWNLOAD_BASE/TokenBar.app.tar.gz"
     }
   }
 }
@@ -107,7 +107,7 @@ gh release create "$TAG" \
   "$APP_TGZ" \
   "$APP_SIG" \
   "$LATEST_JSON" \
-  --title "Tokcat $VERSION" \
+  --title "TokenBar $VERSION" \
   --notes "$NOTES"
 
-echo "==> Done: https://github.com/handlecusion/tokcat/releases/tag/$TAG"
+echo "==> Done: https://github.com/Nanako0129/TokenBar/releases/tag/$TAG"

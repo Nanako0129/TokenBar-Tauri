@@ -47,4 +47,4 @@ Allow: /
 User-agent: FacebookBot
 Allow: /
 
-Sitemap: https://handlecusion.github.io/tokcat/sitemap.xml
+Sitemap: https://nanako0129.github.io/TokenBar/sitemap.xml

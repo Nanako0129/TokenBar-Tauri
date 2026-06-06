@@ -1,1 +1,1 @@
-See /llms.txt at repository root: https://raw.githubusercontent.com/handlecusion/tokcat/main/llms.txt
+See /llms.txt at repository root: https://raw.githubusercontent.com/Nanako0129/TokenBar/main/llms.txt
