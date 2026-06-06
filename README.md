@@ -72,14 +72,12 @@ down to what's **left** (Settings → Agent limits).
 ## Install
 
 ```sh
-brew tap nanako0129/tokenbar
-brew install --cask tokenbar
+brew install --cask nanako0129/tokenbar/tokenbar
 ```
 
-> Homebrew lowercases tap owners, so the tap is `nanako0129/tokenbar` (it lives
-> at [github.com/Nanako0129/homebrew-tokenbar](https://github.com/Nanako0129/homebrew-tokenbar)).
-> Recent Homebrew requires the explicit `brew tap` before installing a
-> third-party cask.
+> The fully-qualified `owner/tap/cask` form auto-taps
+> [nanako0129/homebrew-tokenbar](https://github.com/Nanako0129/homebrew-tokenbar)
+> — no separate `brew tap` step needed (Homebrew lowercases the tap owner).
 
 Or grab the `TokenBar_<version>_aarch64.dmg` from [Releases](https://github.com/Nanako0129/TokenBar/releases).
 
@@ -109,7 +107,7 @@ manifest and public model-pricing data.
 
 ## Build from source
 
-Requires Rust (stable) and Node ≥ 20.
+Requires Rust (stable) and Node ≥ 22.
 
 ```sh
 npm install
