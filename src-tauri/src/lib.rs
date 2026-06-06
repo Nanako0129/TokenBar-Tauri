@@ -16,7 +16,7 @@ use usage_tail::TraceBucket;
 
 const REFRESH_SECS: u64 = 1800;
 const ONESHOT_MAX_AGE_SECS: u64 = 30;
-const TAIL_TICK_SECS: u64 = 5;
+const TAIL_TICK_SECS: u64 = 10;
 const RATE_EMIT_SECS: u64 = 180;
 
 #[derive(Clone, Serialize)]
@@ -272,9 +272,10 @@ fn spawn_bounce_loop(app: tauri::AppHandle, state: Arc<AppState>) {
 }
 
 fn spawn_usage_tail_loop(app: tauri::AppHandle, state: Arc<AppState>) {
-    // 5s tick keeps the animation signal responsive; the emit cadence is
-    // separate so the tray title / trace UI shows the stable 10m average
-    // updated every 3 minutes.
+    // Each tick re-parses recent sessions via tokscale-core (cache-backed), so
+    // a ~10s cadence keeps the animation signal fresh without re-walking large
+    // histories every few seconds. The emit cadence is separate so the tray
+    // title / trace UI shows the stable 10m average updated every 3 minutes.
     async_runtime::spawn(async move {
         // Emit immediately once the listener wires up, then settle into the
         // 3-minute cadence. Without the immediate emit, the tray title
