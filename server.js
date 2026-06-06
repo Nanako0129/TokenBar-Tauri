@@ -198,6 +198,55 @@ function mockModelReport() {
   }
 }
 
+function mockHourlyReport() {
+  // A plausible daily rhythm: quiet overnight, ramps through the workday.
+  const shape = [2, 1, 1, 0, 0, 0, 1, 3, 8, 14, 18, 16, 12, 17, 20, 19, 15, 11, 7, 6, 5, 4, 3, 2]
+  const entries = shape.map((w, h) => {
+    const tokens = w * 90000
+    const input = Math.round(tokens * 0.18)
+    const output = Math.round(tokens * 0.06)
+    const cacheRead = Math.round(tokens * 0.7)
+    const cacheWrite = Math.round(tokens * 0.06)
+    const reasoning = tokens - input - output - cacheRead - cacheWrite
+    return {
+      hour: `2026-06-07 ${String(h).padStart(2, '0')}:00`,
+      clients: ['claude', 'codex'],
+      models: ['claude-sonnet-4.5', 'gpt-5.2-codex'],
+      input,
+      output,
+      cacheRead,
+      cacheWrite,
+      reasoning,
+      total: tokens,
+      messageCount: w * 4,
+      turnCount: w * 2,
+      cost: w * 0.42,
+    }
+  })
+  return { entries, totalCost: entries.reduce((s, e) => s + e.cost, 0) }
+}
+
+function mockAgentsReport() {
+  const entries = [
+    { agent: 'Main', clients: ['claude', 'codex'], cost: 28.4, messages: 510, total: 6100000 },
+    { agent: 'Planner-Sisyphus', clients: ['claude'], cost: 9.1, messages: 142, total: 1800000 },
+    { agent: 'Atlas', clients: ['opencode'], cost: 4.7, messages: 88, total: 920000 },
+    { agent: 'Reviewer', clients: ['codex'], cost: 2.3, messages: 41, total: 410000 },
+  ].map(e => ({
+    ...e,
+    input: Math.round(e.total * 0.2),
+    output: Math.round(e.total * 0.07),
+    cacheRead: Math.round(e.total * 0.66),
+    cacheWrite: Math.round(e.total * 0.05),
+    reasoning: Math.round(e.total * 0.02),
+  }))
+  return {
+    entries,
+    totalCost: entries.reduce((s, e) => s + e.cost, 0),
+    totalMessages: entries.reduce((s, e) => s + e.messages, 0),
+  }
+}
+
 function mockTrace() {
   const trace = [
     { client: 'claude-code', agent: 'main', model: 'claude-sonnet-4.5', tokens: 184000, messages: 12, tokens_per_min: 18400 },
@@ -273,6 +322,16 @@ app.get('/api/rate', (_req, res) => {
 app.get('/api/model-report', (req, res) => {
   const year = String(req.query.year || '')
   res.json({ year, payload: mockModelReport() })
+})
+
+app.get('/api/hourly-report', (req, res) => {
+  const year = String(req.query.year || '')
+  res.json({ year, payload: mockHourlyReport() })
+})
+
+app.get('/api/agents-report', (req, res) => {
+  const year = String(req.query.year || '')
+  res.json({ year, payload: mockAgentsReport() })
 })
 
 app.get('/api/stream', (req, res) => {
