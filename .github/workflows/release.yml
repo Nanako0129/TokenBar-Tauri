@@ -20,7 +20,7 @@ jobs:
       version: ${{ steps.meta.outputs.version }}
       sha256: ${{ steps.sha.outputs.sha256 }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -38,7 +38,7 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
@@ -155,10 +155,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout homebrew-tokenbar
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: Nanako0129/homebrew-tokenbar
-          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          ssh-key: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
           path: tap
 
       - name: Bump cask version + sha256
