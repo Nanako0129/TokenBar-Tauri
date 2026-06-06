@@ -1241,6 +1241,7 @@ html, body, #root {
 /* Per-model breakdown card — mirrors the trace card's surface, distills
    tokscale's wide Models table to model · source · tokens · cost. */
 .model-card {
+  position: relative;
   margin-top: 10px;
   background: var(--card-solid);
   border: 0.5px solid var(--card-border);
@@ -1249,6 +1250,77 @@ html, body, #root {
   box-shadow: var(--card-shadow);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+}
+/* Rich hover tooltip on a model's stacked bar — mirrors the Token Usage chart
+   tooltip (.bar2d-tooltip): floats near the cursor, positioned by the card. */
+.model-tooltip {
+  position: absolute;
+  z-index: 3;
+  min-width: 184px;
+  max-width: min(260px, calc(100% - 8px));
+  padding: 9px 10px;
+  border: 0.5px solid rgba(80, 80, 86, 0.24);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card-solid) 92%, var(--panel-bg));
+  color: var(--text);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  pointer-events: none;
+}
+.model-tooltip-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.model-tooltip-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.model-tooltip-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 650;
+  margin-bottom: 7px;
+  white-space: nowrap;
+}
+.model-tooltip-rows {
+  display: grid;
+  gap: 4px;
+}
+.model-tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.model-tooltip-name {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.model-tooltip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+.model-tooltip-value {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .model-head {
   display: flex;

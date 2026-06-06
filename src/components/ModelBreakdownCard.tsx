@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import type { ModelReport, ModelReportEntry } from '../lib/types'
 import { getClientStyle } from '../lib/clients'
 import { humanizeTokens, formatCost } from '../lib/format'
@@ -11,6 +11,13 @@ interface Props {
   title?: string
 }
 
+interface HoverState {
+  entry: ModelReportEntry
+  left: number
+  top: number
+  transform: string
+}
+
 // Echoes tokscale's TUI "Models" view (crates/tokscale-cli/src/tui/ui/models.rs):
 // one row per model, sorted by cost, with the input/output/cache split shown as
 // a stacked bar. Trimmed to the popover's width — the wide sortable table is
@@ -18,8 +25,8 @@ interface Props {
 const MAX_ROWS = 8
 
 // Single source of truth for the stacked-bar token categories: drives the bar
-// segments, the per-segment hover tooltip, and the legend. The CSS class colors
-// live in styles.css (.model-seg-*).
+// segments, the hover tooltip rows, and the legend. The CSS class colors live
+// in styles.css (.model-seg-*).
 const TOKEN_KINDS = [
   { key: 'input', label: 'Input', className: 'model-seg-input', pick: (e: ModelReportEntry) => e.input },
   { key: 'output', label: 'Output', className: 'model-seg-output', pick: (e: ModelReportEntry) => e.output },
@@ -30,6 +37,8 @@ const TOKEN_KINDS = [
 
 export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Props) {
   const [expanded, setExpanded] = useState(false)
+  const [hover, setHover] = useState<HoverState | null>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
   if (!report) return null
 
   const allow = new Set(clientIds)
@@ -41,8 +50,25 @@ export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Prop
   const hidden = rows.length - Math.min(rows.length, MAX_ROWS)
   const totalCost = rows.reduce((s, e) => s + e.cost, 0)
 
+  // Float a rich tooltip near the cursor, like the Token Usage chart. Position
+  // is relative to the card; flip horizontally near the edges and drop below
+  // the cursor for rows near the top so it doesn't clip out of the card.
+  function showTooltip(e: React.MouseEvent, entry: ModelReportEntry) {
+    const card = cardRef.current
+    if (!card) return
+    const rect = card.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const pctX = (x / rect.width) * 100
+    const tx = pctX > 74 ? '-100%' : pctX < 26 ? '0' : '-50%'
+    const ty = y > 110 ? 'calc(-100% - 10px)' : 'calc(0% + 14px)'
+    setHover({ entry, left: x, top: y, transform: `translate(${tx}, ${ty})` })
+  }
+
+  const hoverStyle = hover ? getClientStyle(hover.entry.client) : null
+
   return (
-    <div className="model-card">
+    <div className="model-card" ref={cardRef}>
       <div className="model-head">
         <h2 className="model-heading">{title}</h2>
         <div className="model-sub">
@@ -68,7 +94,7 @@ export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Prop
               // Bar widths use a log scale: cache-read tokens routinely dwarf
               // input/output/reasoning by 10-100×, so a linear stacked bar would
               // render everything else as invisible slivers. log1p keeps small
-              // categories visible while preserving rank. Tooltips still report
+              // categories visible while preserving rank. The tooltip reports
               // the true token count and true linear share.
               const logTotal = segs.reduce((sum, s) => sum + Math.log1p(s.value), 0)
               return (
@@ -81,16 +107,19 @@ export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Prop
                   />
                   <div className="model-meta">
                     <span className="model-name" title={e.model}>{e.model}</span>
-                    <div className="model-bar" title={`${humanizeTokens(e.total)} tokens total`}>
+                    <div
+                      className="model-bar"
+                      onMouseEnter={ev => showTooltip(ev, e)}
+                      onMouseMove={ev => showTooltip(ev, e)}
+                      onMouseLeave={() => setHover(null)}
+                    >
                       {segs.map(s => {
-                        const linearPct = (s.value / e.total) * 100
                         const width = logTotal > 0 ? (Math.log1p(s.value) / logTotal) * 100 : 0
                         return (
                           <span
                             key={s.key}
                             className={`model-seg ${s.className}`}
                             style={{ width: `${width}%` }}
-                            title={`${s.label}: ${humanizeTokens(s.value)} (${linearPct.toFixed(0)}%)`}
                           />
                         )
                       })}
@@ -115,6 +144,43 @@ export function ModelBreakdownCard({ report, clientIds, title = 'Models' }: Prop
             </button>
           )}
         </>
+      )}
+      {hover && hoverStyle && (
+        <div
+          className="model-tooltip"
+          style={{ left: hover.left, top: hover.top, transform: hover.transform }}
+          role="status"
+        >
+          <div className="model-tooltip-head">
+            <span className="model-tooltip-dot" style={{ background: hoverStyle.color }} />
+            {hover.entry.model}
+          </div>
+          <div className="model-tooltip-sub">
+            {hoverStyle.displayName} · {hover.entry.provider}
+          </div>
+          <div className="model-tooltip-total">
+            <span>{humanizeTokens(hover.entry.total)} tokens</span>
+            <span>{formatCost(hover.entry.cost)}</span>
+          </div>
+          <div className="model-tooltip-rows">
+            {TOKEN_KINDS.map(k => ({ ...k, value: k.pick(hover.entry) }))
+              .filter(s => s.value > 0)
+              .map(s => {
+                const pct = hover.entry.total > 0 ? (s.value / hover.entry.total) * 100 : 0
+                return (
+                  <div className="model-tooltip-row" key={s.key}>
+                    <span className="model-tooltip-name">
+                      <span className={`model-tooltip-dot ${s.className}`} />
+                      {s.label}
+                    </span>
+                    <span className="model-tooltip-value">
+                      {humanizeTokens(s.value)} · {pct.toFixed(0)}%
+                    </span>
+                  </div>
+                )
+              })}
+          </div>
+        </div>
       )}
     </div>
   )
