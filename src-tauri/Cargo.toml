@@ -37,6 +37,10 @@ tauri-plugin-global-shortcut = "2"
 # the Hermes Agent SQLite tail in usage_tail.rs (no schema migrations —
 # read-only queries only).
 rusqlite = { version = "0.32", features = ["bundled"] }
+# Vendored session-parsing/aggregation/pricing core, copied from tokscale
+# (vendor/tokscale-core). Powers the contribution graph across every
+# supported agent so usage_graph.rs no longer hand-rolls per-client parsers.
+tokscale-core = { path = "../vendor/tokscale-core" }
 
 # Direct access for the native tray icon cache — pre-decode each frame to an
 # NSImage once at startup, then reuse the same NSImage on every animation
