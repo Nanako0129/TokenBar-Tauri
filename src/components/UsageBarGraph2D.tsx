@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
-import { getClientStyle } from '../lib/clients'
 import { addDays, formatCost, formatMonthDay, isoDate, parseISODate } from '../lib/format'
 import type { Contribution, Stats, TokenBreakdown, UsagePayload } from '../lib/types'
+import type { ColorFor } from '../lib/modelColors'
 import type { GridLayout } from '../lib/grid'
 import { ContributionGraph3D } from './ContributionGraph3D'
 import { TokenUsageCard } from './TokenUsageCard'
@@ -22,10 +22,15 @@ interface Props {
   /** When provided, the card leads with these token-usage totals (shown in both 2D and 3D). */
   stats?: Stats
   kbdHints?: boolean
+  /** Resolve a (providerId, modelId) → color so the chart stacks by model with
+   *  tokscale-style provider shades. */
+  colorFor: ColorFor
 }
 
 interface Segment {
-  clientId: string
+  key: string
+  label: string
+  color: string
   tokens: number
   cost: number
 }
@@ -56,22 +61,29 @@ function tokenTotal(tokens: TokenBreakdown): number {
   )
 }
 
-function dayFromContribution(contribution: Contribution, allowed: Set<string>): DayBar {
+function dayFromContribution(contribution: Contribution, allowed: Set<string>, colorFor: ColorFor): DayBar {
+  // Group by model (not client) so the stack reads like tokscale. The key is
+  // the model id, scoped within the day; color comes from the shared provider
+  // shade resolver.
   const grouped = new Map<string, Segment>()
   for (const client of contribution.clients) {
     if (!allowed.has(client.client)) continue
     const tokens = tokenTotal(client.tokens)
     if (tokens <= 0 && (client.cost || 0) <= 0) continue
-    const slot = grouped.get(client.client) ?? {
-      clientId: client.client,
+    const key = client.modelId || 'unknown'
+    const slot = grouped.get(key) ?? {
+      key,
+      label: client.modelId || 'unknown',
+      color: colorFor(client.providerId, client.modelId || 'unknown'),
       tokens: 0,
       cost: 0,
     }
     slot.tokens += tokens
     slot.cost += client.cost || 0
-    grouped.set(client.client, slot)
+    grouped.set(key, slot)
   }
-  const segments = Array.from(grouped.values()).sort((a, b) => a.clientId.localeCompare(b.clientId))
+  // Stable stacking order across days: sort by model key.
+  const segments = Array.from(grouped.values()).sort((a, b) => a.key.localeCompare(b.key))
   return {
     date: contribution.date,
     totalTokens: segments.reduce((sum, s) => sum + s.tokens, 0),
@@ -97,6 +109,7 @@ export function UsageBarGraph2D({
   accent,
   stats,
   kbdHints,
+  colorFor,
 }: Props) {
   const [hover, setHover] = useState<HoverState | null>(null)
   const headSubtitle = stats && view === '3d' ? 'Full year' : subtitle
@@ -104,7 +117,7 @@ export function UsageBarGraph2D({
     const allowed = new Set(clientIds)
     const byDate = new Map<string, DayBar>()
     for (const contribution of payload.contributions) {
-      const day = dayFromContribution(contribution, allowed)
+      const day = dayFromContribution(contribution, allowed, colorFor)
       if (day.totalTokens > 0 || day.totalCost > 0) byDate.set(day.date, day)
     }
 
@@ -118,7 +131,7 @@ export function UsageBarGraph2D({
       series.push(byDate.get(date) ?? { date, totalTokens: 0, totalCost: 0, segments: [] })
     }
     return series
-  }, [clientIds, payload])
+  }, [clientIds, payload, colorFor])
 
   const maxTokens = Math.max(1, ...bars.map(b => b.totalTokens))
   const width = 520
@@ -131,7 +144,21 @@ export function UsageBarGraph2D({
   const chartHeight = height - top - bottom
   const gap = 4
   const barWidth = (width - gap * (bars.length - 1)) / bars.length
-  const activeClients = clientIds.map(id => getClientStyle(id))
+  // Top models across the visible window, for the legend — aggregate tokens per
+  // model key and keep the heaviest few with their stack color.
+  const topModels = useMemo(() => {
+    const agg = new Map<string, { label: string; color: string; tokens: number }>()
+    for (const bar of bars) {
+      for (const seg of bar.segments) {
+        const slot = agg.get(seg.key) ?? { label: seg.label, color: seg.color, tokens: 0 }
+        slot.tokens += seg.tokens
+        agg.set(seg.key, slot)
+      }
+    }
+    return Array.from(agg.values())
+      .sort((a, b) => b.tokens - a.tokens)
+      .slice(0, 5)
+  }, [bars])
 
   function showTooltip(bar: DayBar, index: number) {
     if (bar.totalTokens <= 0 && bar.totalCost <= 0) return
@@ -181,10 +208,10 @@ export function UsageBarGraph2D({
             </button>
           </div>
           <div className="bar2d-legend">
-            {activeClients.slice(0, 5).map(style => (
-              <span key={style.id} className="bar2d-legend-item">
-                <span className="bar2d-dot" style={{ background: style.color }} />
-                {style.displayName.replace(/\s+(CLI|Code|IDE)$/i, '')}
+            {topModels.map(m => (
+              <span key={m.label} className="bar2d-legend-item">
+                <span className="bar2d-dot" style={{ background: m.color }} />
+                {m.label}
               </span>
             ))}
           </div>
@@ -217,20 +244,19 @@ export function UsageBarGraph2D({
                 {bar.segments.map(segment => {
                   const h = bar.totalTokens > 0 ? (segment.tokens / bar.totalTokens) * totalHeight : 0
                   y -= h
-                  const color = getClientStyle(segment.clientId).color
                   return (
                     <rect
-                      key={segment.clientId}
+                      key={segment.key}
                       x={x}
                       y={y}
                       width={barWidth}
                       height={Math.max(0, h)}
                       rx={2}
-                      fill={color}
+                      fill={segment.color}
                       opacity={0.86}
                     >
                       <title>
-                        {`${formatMonthDay(bar.date)} • ${getClientStyle(segment.clientId).displayName} • ${exactTokens(segment.tokens)} tokens • ${formatCost(segment.cost)}`}
+                        {`${formatMonthDay(bar.date)} • ${segment.label} • ${exactTokens(segment.tokens)} tokens • ${formatCost(segment.cost)}`}
                       </title>
                     </rect>
                   )
@@ -274,20 +300,20 @@ export function UsageBarGraph2D({
               <span>{formatCost(hover.bar.totalCost)}</span>
             </div>
             <div className="bar2d-tooltip-rows">
-              {hover.bar.segments.map(segment => {
-                const style = getClientStyle(segment.clientId)
-                return (
-                  <div className="bar2d-tooltip-row" key={segment.clientId}>
+              {[...hover.bar.segments]
+                .sort((a, b) => b.tokens - a.tokens)
+                .slice(0, 6)
+                .map(segment => (
+                  <div className="bar2d-tooltip-row" key={segment.key}>
                     <span className="bar2d-tooltip-name">
-                      <span className="bar2d-tooltip-dot" style={{ background: style.color }} />
-                      {style.displayName.replace(/\s+(CLI|Code|IDE)$/i, '')}
+                      <span className="bar2d-tooltip-dot" style={{ background: segment.color }} />
+                      {segment.label}
                     </span>
                     <span className="bar2d-tooltip-value">
                       {exactTokens(segment.tokens)} · {formatCost(segment.cost)}
                     </span>
                   </div>
-                )
-              })}
+                ))}
             </div>
           </div>
         )}
