@@ -36,6 +36,8 @@ jobs:
       - name: Build site
         run: npm run build
         working-directory: landing
+        env:
+          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL || 'https://tokenbar.nyanako.com' }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

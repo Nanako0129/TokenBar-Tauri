@@ -2,12 +2,10 @@
 import { defineConfig } from 'astro/config'
 import sitemap from '@astrojs/sitemap'
 
-// TokenBar is a GitHub *project* page (nanako0129.github.io/TokenBar/), so the
-// whole site is served under a base path. Every asset/link is base-aware via
-// import.meta.env.BASE_URL.
+// Custom-domain deploys are served from the domain root, so keep Astro's base
+// path at "/" and let absolute SEO URLs be configured by the deploy env.
 export default defineConfig({
-  site: 'https://nanako0129.github.io',
-  base: '/TokenBar/',
+  site: process.env.PUBLIC_SITE_URL ?? 'https://tokenbar.nyanako.com',
   trailingSlash: 'ignore',
   integrations: [sitemap()],
 })
