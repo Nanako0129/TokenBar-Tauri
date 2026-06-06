@@ -12,6 +12,10 @@ import kilocodeIcon from '../assets/agent-icons/kilocode.svg?raw'
 import syntheticIcon from '../assets/agent-icons/synthetic.svg?raw'
 import warpIcon from '../assets/agent-icons/warp.svg?raw'
 import kimiIcon from '../assets/agent-icons/kimi.svg?raw'
+import kiroIcon from '../assets/agent-icons/kiro.svg?raw'
+import codebuffIcon from '../assets/agent-icons/codebuff.svg?raw'
+import antigravityIcon from '../assets/agent-icons/antigravity.svg?raw'
+import kiloIcon from '../assets/agent-icons/kilo.svg?raw'
 
 // 'mono' icons are single-color glyphs we tint white over the brand-color disc.
 // 'full' icons carry their own design (background + colors) and fill the disc as-is.
@@ -48,7 +52,7 @@ const REGISTRY: Record<string, RegistryEntry> = {
   qwen: { displayName: 'Qwen CLI', color: '#7c3aed', iconRaw: qwenIcon, iconType: 'mono' },
   roocode: { displayName: 'Roo Code', color: '#ef4444' },
   kilocode: { displayName: 'KiloCode', color: '#f97316', iconRaw: kilocodeIcon, iconType: 'full' },
-  kilo: { displayName: 'Kilo CLI', color: '#f59e0b' },
+  kilo: { displayName: 'Kilo CLI', color: '#f59e0b', iconRaw: kiloIcon, iconType: 'full' },
   mux: { displayName: 'Mux', color: '#06b6d4' },
   crush: { displayName: 'Crush', color: '#ec4899' },
   synthetic: { displayName: 'Synthetic', color: '#64748b', iconRaw: syntheticIcon, iconType: 'full' },
@@ -56,10 +60,10 @@ const REGISTRY: Record<string, RegistryEntry> = {
   // No bundled SVG, so getClientStyle's title-case + brand-color disc fallback
   // renders them until proper icons land.
   goose: { displayName: 'Goose', color: '#14b8a6' },
-  codebuff: { displayName: 'Codebuff', color: '#8b5cf6' },
-  antigravity: { displayName: 'Antigravity', color: '#3b82f6' },
+  codebuff: { displayName: 'Codebuff', color: '#8b5cf6', iconRaw: codebuffIcon, iconType: 'full' },
+  antigravity: { displayName: 'Antigravity', color: '#3b82f6', iconRaw: antigravityIcon, iconType: 'full' },
   zed: { displayName: 'Zed', color: '#084fff' },
-  kiro: { displayName: 'Kiro', color: '#a855f7' },
+  kiro: { displayName: 'Kiro', color: '#9046ff', iconRaw: kiroIcon, iconType: 'full' },
   trae: { displayName: 'Trae', color: '#ef4444' },
   warp: { displayName: 'Warp', color: '#01a4ff', iconRaw: warpIcon, iconType: 'mono' },
 }
