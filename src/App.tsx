@@ -327,18 +327,48 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [dashboardClients, activeTab, settingsOpen, aboutOpen])
 
-  // Track the Cmd key for the shortcut-hint overlay. keyup can be missed if the
-  // app loses focus mid-hold (e.g. Cmd+Tab), so blur/visibilitychange force the
-  // pins off — otherwise they'd stay stuck after switching away.
+  // Track the Cmd key for the shortcut-hint overlay. The pins only reveal after
+  // Cmd is held *alone* for a short beat — so Cmd tapped as part of a system
+  // chord (⌘⇧4 screenshots, ⌘Tab, …) never flashes them, which kept polluting
+  // screenshots of the popover. Any other modifier (Shift/Alt/Ctrl) cancels
+  // them immediately. keyup can be missed if the app loses focus mid-hold, so
+  // blur/visibilitychange force the pins off too.
   useEffect(() => {
-    const onDown = (e: KeyboardEvent) => { if (e.key === 'Meta') setCmdHeld(true) }
-    const onUp = (e: KeyboardEvent) => { if (e.key === 'Meta') setCmdHeld(false) }
-    const reset = () => setCmdHeld(false)
+    const HINT_DELAY = 400
+    let timer: number | null = null
+    const clearTimer = () => {
+      if (timer !== null) {
+        window.clearTimeout(timer)
+        timer = null
+      }
+    }
+    const hide = () => {
+      clearTimer()
+      setCmdHeld(false)
+    }
+    const onDown = (e: KeyboardEvent) => {
+      // A chord with another modifier is never a "hold Cmd to discover" gesture.
+      if (e.shiftKey || e.altKey || e.ctrlKey) {
+        hide()
+        return
+      }
+      if (e.key === 'Meta' && timer === null) {
+        timer = window.setTimeout(() => {
+          timer = null
+          setCmdHeld(true)
+        }, HINT_DELAY)
+      }
+    }
+    const onUp = (e: KeyboardEvent) => {
+      if (e.key === 'Meta') hide()
+    }
+    const reset = () => hide()
     window.addEventListener('keydown', onDown)
     window.addEventListener('keyup', onUp)
     window.addEventListener('blur', reset)
     document.addEventListener('visibilitychange', reset)
     return () => {
+      clearTimer()
       window.removeEventListener('keydown', onDown)
       window.removeEventListener('keyup', onUp)
       window.removeEventListener('blur', reset)
