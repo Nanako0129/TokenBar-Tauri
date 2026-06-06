@@ -30,6 +30,8 @@ interface Props {
   detailedTrace: boolean
   agentUsage: AgentUsagePayload | null
   dashboardClients: string[]
+  // Agent limit bars fill by used (true) or remaining (false).
+  limitsAsUsed: boolean
   // When set, this view shows a single client's slice; otherwise it's the
   // all-agent overview (which also carries the live-session trace).
   singleClient: string | null
@@ -57,6 +59,7 @@ export function OverviewView({
   detailedTrace,
   agentUsage,
   dashboardClients,
+  limitsAsUsed,
   singleClient,
 }: Props) {
   const chart = (
@@ -89,6 +92,7 @@ export function OverviewView({
           agentUsage={agentUsage}
           title={`${style.displayName} limits`}
           note="Session / weekly / model limits"
+          asUsed={limitsAsUsed}
         />
         {chart}
         <ModelBreakdownCard
@@ -105,7 +109,7 @@ export function OverviewView({
   return (
     <div className="dashboard-stack">
       {chart}
-      <AgentLimitsCard clients={dashboardClients} trace={trace} agentUsage={agentUsage} />
+      <AgentLimitsCard clients={dashboardClients} trace={trace} agentUsage={agentUsage} asUsed={limitsAsUsed} />
       <UsageTraceCard buckets={trace} windowSecs={600} detailed={detailedTrace} title="Live session" />
       <ModelBreakdownCard report={modelReport} clientIds={clientIds} colorFor={colorFor} />
       <StreaksCard longest={stats.streaks.longest} current={stats.streaks.current} />

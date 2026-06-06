@@ -219,6 +219,23 @@ export function SettingsPanel({ open, onClose, settings, onChange }: Props) {
           )}
 
           <section className="settings-section">
+            <div className="settings-label">Agent limits</div>
+            <div className="settings-group">
+              <div className="settings-row">
+                <span className="settings-row-label">Show as used</span>
+                <SwitchToggle
+                  checked={settings.limitsAsUsed}
+                  onChange={next => onChange({ ...settings, limitsAsUsed: next })}
+                />
+              </div>
+            </div>
+            <div className="settings-hint">
+              On, bars count up as quota is used; off, they count down to what's left.
+              The color always warns as quota runs low.
+            </div>
+          </section>
+
+          <section className="settings-section">
             <div className="settings-label">Live trace</div>
             <div className="settings-group">
               <div className="settings-row">
@@ -228,6 +245,10 @@ export function SettingsPanel({ open, onClose, settings, onChange }: Props) {
                   onChange={next => onChange({ ...settings, detailedTrace: next })}
                 />
               </div>
+            </div>
+            <div className="settings-hint">
+              Affects the live-session card only: on, each agent &amp; model gets its own
+              row; off, rows collapse to one per app.
             </div>
           </section>
 

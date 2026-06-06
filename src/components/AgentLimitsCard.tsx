@@ -9,6 +9,8 @@ interface Props {
   agentUsage: AgentUsagePayload | null
   title?: string
   note?: string
+  // When true, bars fill by amount used (counting up) instead of remaining.
+  asUsed?: boolean
 }
 
 interface LimitRow {
@@ -60,7 +62,7 @@ function mark(id: string) {
   )
 }
 
-export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent limits', note = 'OAuth quota' }: Props) {
+export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent limits', note = 'OAuth quota', asUsed = false }: Props) {
   const liveClients = new Set(trace.filter(t => t.tokens_per_min > 0).map(t => normalizeTraceClient(t.client)))
   const snapshots = new Map((agentUsage?.agents ?? []).map(agent => [agent.clientId, agent]))
   const visibleClients = Array.from(new Set([
@@ -105,8 +107,16 @@ export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent lim
                 <div className="limit-windows">
                   {rows.map(row => {
                     const remaining = 'remainingPercent' in row ? row.remainingPercent : undefined
-                    const fill = remaining ?? 0
-                    const left = remaining === undefined ? 'No data' : `${Math.max(0, remaining).toFixed(0)}% left`
+                    const used = remaining === undefined ? undefined : 100 - remaining
+                    // Bar fills by used (counting up) or remaining (counting
+                    // down); color always tracks how much quota is left.
+                    const fill = asUsed ? used ?? 0 : remaining ?? 0
+                    const left =
+                      remaining === undefined
+                        ? 'No data'
+                        : asUsed
+                          ? `${Math.max(0, used as number).toFixed(0)}% used`
+                          : `${Math.max(0, remaining).toFixed(0)}% left`
                     return (
                       <div className="limit-window" key={row.label}>
                         <div className="limit-window-meta">

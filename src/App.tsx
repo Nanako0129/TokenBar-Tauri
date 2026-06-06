@@ -539,6 +539,7 @@ export default function App() {
                   detailedTrace={settings.detailedTrace}
                   agentUsage={agentUsage.payload}
                   dashboardClients={dashboardClients}
+                  limitsAsUsed={settings.limitsAsUsed}
                   singleClient={activeTab === 'overview' ? null : activeTab}
                 />
               )}

@@ -18,6 +18,9 @@ export interface Settings {
   // When true, the Live trace card splits rows by (client, agent, model);
   // otherwise rows collapse to one per client.
   detailedTrace: boolean
+  // When true, agent limit bars fill by amount *used* (counting up); otherwise
+  // they fill by amount *remaining* (counting down). Color always tracks health.
+  limitsAsUsed: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -26,6 +29,7 @@ export const DEFAULT_SETTINGS: Settings = {
   animateTray: true,
   animationStyle: 'cat',
   detailedTrace: false,
+  limitsAsUsed: false,
 }
 
 export const ANIMATION_STYLE_LABELS: Record<AnimationStyle, string> = {
