@@ -1773,7 +1773,7 @@ html, body, #root {
   white-space: nowrap;
 }
 
-/* ── View placeholder (Hourly/Agents before backend lands) ─────────────── */
+/* ── View placeholder (fallback) ───────────────────────────────────────── */
 .view-placeholder {
   background: var(--card-solid);
   border: 0.5px solid var(--card-border);
@@ -1783,4 +1783,113 @@ html, body, #root {
   font-size: 12px;
   color: var(--text-muted);
   box-shadow: var(--card-shadow);
+}
+
+/* ── Hourly view (24-hour-of-day rhythm) ───────────────────────────────── */
+.hourly-note {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.hourly-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.hourly-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+  font-size: 10.5px;
+}
+.hourly-hour {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.hourly-track {
+  height: 7px;
+  border-radius: 4px;
+  background: var(--blue-soft);
+  overflow: hidden;
+}
+.hourly-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--blue);
+}
+.hourly-tokens {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 44px;
+}
+.hourly-cost {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 52px;
+}
+
+/* ── Agents view (sub-agents by cost) ──────────────────────────────────── */
+.agents-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 460px;
+  overflow-y: auto;
+}
+.agents-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.agents-line1 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.agents-name {
+  font-size: 11.5px;
+  font-weight: 650;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agents-share {
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 650;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.agents-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--blue-soft);
+  overflow: hidden;
+}
+.agents-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--blue);
+}
+.agents-line2 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.agents-sources {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agents-stats {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
 }

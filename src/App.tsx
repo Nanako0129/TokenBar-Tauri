@@ -8,11 +8,15 @@ import { OverviewView } from './components/views/OverviewView'
 import { ModelsView } from './components/views/ModelsView'
 import { DailyView } from './components/views/DailyView'
 import { StatsView } from './components/views/StatsView'
+import { HourlyView } from './components/views/HourlyView'
+import { AgentsView } from './components/views/AgentsView'
 import { UsageView, StackBy } from './components/UsageBarGraph2D'
 import { buildGrid } from './lib/grid'
 import { useGraphStream } from './hooks/useGraphStream'
 import { useAgentUsage } from './hooks/useAgentUsage'
 import { useModelReport } from './hooks/useModelReport'
+import { useHourlyReport } from './hooks/useHourlyReport'
+import { useAgentsReport } from './hooks/useAgentsReport'
 import { buildModelColorMap } from './lib/modelColors'
 import { computeStats } from './lib/stats'
 import { isTauri } from './lib/runtime'
@@ -70,6 +74,11 @@ export default function App() {
   const { payload, error } = useGraphStream(year)
   const agentUsage = useAgentUsage(refreshTick)
   const modelReport = useModelReport(year, refreshTick)
+  // Hourly/Agents reports are heavier per-message parses; fetch them lazily,
+  // only while their view is active (empty year short-circuits the hook).
+  const [activeView, setActiveView] = useState<AppView>(() => loadView())
+  const hourlyReport = useHourlyReport(activeView === 'hourly' ? year : '', refreshTick)
+  const agentsReport = useAgentsReport(activeView === 'agents' ? year : '', refreshTick)
   // Shared provider-shade color resolver (tokscale-style): cost-ranks models
   // within each provider. Drives both the usage chart's model stacks and the
   // Models card dots so colors stay consistent.
@@ -86,7 +95,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>('overview')
   const [usageView, setUsageView] = useState<UsageView>(() => loadUsageView())
   const [stackBy, setStackBy] = useState<StackBy>(() => loadStackBy())
-  const [activeView, setActiveView] = useState<AppView>(() => loadView())
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   const [settingsOpen, setSettingsOpen] = useState(false)
 
@@ -558,10 +566,20 @@ export default function App() {
                   cmdHeld={cmdHeld}
                 />
               )}
-              {(activeView === 'hourly' || activeView === 'agents') && (
-                <div className="view-placeholder">
-                  {activeView === 'hourly' ? 'Hourly' : 'Agents'} view coming soon
-                </div>
+              {activeView === 'hourly' && (
+                <HourlyView
+                  report={hourlyReport.report}
+                  clientIds={activeClientIds}
+                  filtered={activeTab !== 'overview'}
+                  error={hourlyReport.error}
+                />
+              )}
+              {activeView === 'agents' && (
+                <AgentsView
+                  report={agentsReport.report}
+                  clientIds={activeClientIds}
+                  error={agentsReport.error}
+                />
               )}
             </>
           )}

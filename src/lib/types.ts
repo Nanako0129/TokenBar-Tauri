@@ -86,6 +86,55 @@ export interface ModelReportEnvelope {
   payload: ModelReport
 }
 
+export interface HourlyReportEntry {
+  hour: string
+  clients: string[]
+  models: string[]
+  input: number
+  output: number
+  cacheRead: number
+  cacheWrite: number
+  reasoning: number
+  total: number
+  messageCount: number
+  turnCount: number
+  cost: number
+}
+
+export interface HourlyReport {
+  entries: HourlyReportEntry[]
+  totalCost: number
+}
+
+export interface HourlyReportEnvelope {
+  year: string
+  payload: HourlyReport
+}
+
+export interface AgentReportEntry {
+  agent: string
+  clients: string[]
+  input: number
+  output: number
+  cacheRead: number
+  cacheWrite: number
+  reasoning: number
+  total: number
+  cost: number
+  messages: number
+}
+
+export interface AgentsReport {
+  entries: AgentReportEntry[]
+  totalCost: number
+  totalMessages: number
+}
+
+export interface AgentsReportEnvelope {
+  year: string
+  payload: AgentsReport
+}
+
 export interface PerDay {
   date: string
   tokens: number
