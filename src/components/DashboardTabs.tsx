@@ -40,12 +40,6 @@ export function DashboardTabs({ clients, active, onChange, kbdHints }: Props) {
         role="tab"
         aria-selected={active === 'overview'}
       >
-        <span className="dash-tab-overview" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-          <span />
-        </span>
         <span>Overview</span>
         {hint(0) && <span className="kbd-pin" aria-hidden="true">{hint(0)}</span>}
       </button>
