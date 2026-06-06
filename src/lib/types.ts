@@ -56,6 +56,36 @@ export interface StreamEnvelope {
   payload: UsagePayload
 }
 
+export interface ModelReportEntry {
+  client: string
+  model: string
+  provider: string
+  input: number
+  output: number
+  cacheRead: number
+  cacheWrite: number
+  reasoning: number
+  total: number
+  messageCount: number
+  cost: number
+  msPer1KTokens: number | null
+}
+
+export interface ModelReport {
+  entries: ModelReportEntry[]
+  totalInput: number
+  totalOutput: number
+  totalCacheRead: number
+  totalCacheWrite: number
+  totalMessages: number
+  totalCost: number
+}
+
+export interface ModelReportEnvelope {
+  year: string
+  payload: ModelReport
+}
+
 export interface PerDay {
   date: string
   tokens: number

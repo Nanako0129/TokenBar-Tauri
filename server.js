@@ -180,6 +180,24 @@ function mockAgentUsage() {
   }
 }
 
+function mockModelReport() {
+  const entries = [
+    { client: 'claude', model: 'claude-sonnet-4.5', provider: 'anthropic', input: 1240000, output: 320000, cacheRead: 4100000, cacheWrite: 180000, reasoning: 0, messageCount: 412, cost: 23.41, msPer1KTokens: 38 },
+    { client: 'codex', model: 'gpt-5.2-codex', provider: 'openai', input: 880000, output: 210000, cacheRead: 2600000, cacheWrite: 90000, reasoning: 140000, messageCount: 298, cost: 15.07, msPer1KTokens: 52 },
+    { client: 'opencode', model: 'kimi-k2.5', provider: 'moonshot', input: 410000, output: 96000, cacheRead: 720000, cacheWrite: 41000, reasoning: 0, messageCount: 121, cost: 3.82, msPer1KTokens: null },
+    { client: 'gemini', model: 'gemini-2.5-pro', provider: 'google', input: 220000, output: 64000, cacheRead: 310000, cacheWrite: 0, reasoning: 0, messageCount: 73, cost: 2.11, msPer1KTokens: 44 },
+  ].map(e => ({ ...e, total: e.input + e.output + e.cacheRead + e.cacheWrite + e.reasoning }))
+  return {
+    entries,
+    totalInput: entries.reduce((s, e) => s + e.input, 0),
+    totalOutput: entries.reduce((s, e) => s + e.output, 0),
+    totalCacheRead: entries.reduce((s, e) => s + e.cacheRead, 0),
+    totalCacheWrite: entries.reduce((s, e) => s + e.cacheWrite, 0),
+    totalMessages: entries.reduce((s, e) => s + e.messageCount, 0),
+    totalCost: entries.reduce((s, e) => s + e.cost, 0),
+  }
+}
+
 function mockTrace() {
   const trace = [
     { client: 'claude-code', agent: 'main', model: 'claude-sonnet-4.5', tokens: 184000, messages: 12, tokens_per_min: 18400 },
@@ -250,6 +268,11 @@ app.get('/api/agent-usage', (_req, res) => {
 
 app.get('/api/rate', (_req, res) => {
   res.json(mockTrace())
+})
+
+app.get('/api/model-report', (req, res) => {
+  const year = String(req.query.year || '')
+  res.json({ year, payload: mockModelReport() })
 })
 
 app.get('/api/stream', (req, res) => {

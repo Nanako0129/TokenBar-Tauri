@@ -9,6 +9,8 @@ import { UsageBarGraph2D, UsageView } from './components/UsageBarGraph2D'
 import { buildGrid } from './lib/grid'
 import { useGraphStream } from './hooks/useGraphStream'
 import { useAgentUsage } from './hooks/useAgentUsage'
+import { useModelReport } from './hooks/useModelReport'
+import { ModelBreakdownCard } from './components/ModelBreakdownCard'
 import { computeStats } from './lib/stats'
 import { isTauri } from './lib/runtime'
 import { computeTrayTitle, loadSettings, saveSettings, Settings } from './lib/settings'
@@ -46,6 +48,7 @@ export default function App() {
   const [refreshTick, setRefreshTick] = useState(0)
   const { payload, error } = useGraphStream(year)
   const agentUsage = useAgentUsage(refreshTick)
+  const modelReport = useModelReport(year, refreshTick)
   const [theme, setTheme] = useState<ThemeName>(() => loadTheme())
   const [isDark, setIsDark] = useState<boolean>(() =>
     typeof window !== 'undefined' && window.matchMedia
@@ -496,6 +499,7 @@ export default function App() {
                     detailed={settings.detailedTrace}
                     title="Live session"
                   />
+                  <ModelBreakdownCard report={modelReport.report} clientIds={presentClients} />
                   <StreaksCard longest={overviewStats.streaks.longest} current={overviewStats.streaks.current} />
                 </div>
               ) : (
@@ -521,6 +525,7 @@ export default function App() {
                     stats={activeStats}
                     kbdHints={cmdHeld}
                   />
+                  <ModelBreakdownCard report={modelReport.report} clientIds={[activeTab]} title={`${getClientStyle(activeTab).displayName} models`} />
                   <StreaksCard longest={activeStats.streaks.longest} current={activeStats.streaks.current} />
                 </div>
               )}
