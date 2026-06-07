@@ -16,3 +16,7 @@ vendor/**/Cargo.lock
 
 # Tooling caches
 .playwright-mcp
+
+# Local agent guides (not version-controlled)
+CLAUDE.md
+AGENT.md
