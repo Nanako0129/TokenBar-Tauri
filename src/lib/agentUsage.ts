@@ -36,4 +36,6 @@ export interface AgentUsageSnapshot {
 export interface AgentUsagePayload {
   generatedAt: string
   agents: AgentUsageSnapshot[]
+  /** Subscription-type providers opencode is authed against (e.g. ["Codex"]). */
+  opencodeSubscriptions?: string[]
 }

@@ -1,4 +1,5 @@
 use crate::agent_antigravity;
+use crate::agent_copilot;
 use crate::agent_history;
 use chrono::{DateTime, SecondsFormat, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
@@ -20,6 +21,11 @@ const CLAUDE_KEYCHAIN_SERVICE: &str = "Claude Code-credentials";
 pub struct AgentUsagePayload {
     generated_at: String,
     agents: Vec<AgentUsageSnapshot>,
+    /// Subscription-type providers opencode is authenticated against (its
+    /// `auth.json` `type: "oauth"` entries), e.g. ["Codex", "Copilot"]. Surfaced
+    /// so the user can see which agent subscriptions opencode also draws on.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    opencode_subscriptions: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -263,12 +269,48 @@ struct ClaudeRefreshResponse {
 
 pub async fn run() -> AgentUsagePayload {
     let generated_at = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
-    let (codex, claude, antigravity) =
-        tokio::join!(fetch_codex(), fetch_claude(), fetch_antigravity());
+    let (codex, claude, antigravity, copilot) = tokio::join!(
+        fetch_codex(),
+        fetch_claude(),
+        fetch_antigravity(),
+        fetch_copilot()
+    );
+    let mut agents = vec![codex, claude, antigravity];
+    // Copilot only appears when signed in (via opencode); skip a bare not-signed-in error card.
+    if let Some(copilot) = copilot {
+        agents.push(copilot);
+    }
     AgentUsagePayload {
         generated_at,
-        agents: vec![codex, claude, antigravity],
+        agents,
+        opencode_subscriptions: crate::opencode_integrations::detect_subscriptions(),
     }
+}
+
+async fn fetch_copilot() -> Option<AgentUsageSnapshot> {
+    // No opencode Copilot auth → no card at all (rather than an error row).
+    crate::opencode_integrations::github_copilot_token()?;
+    let now = Utc::now();
+    Some(match agent_copilot::fetch(now).await {
+        Ok(data) => AgentUsageSnapshot {
+            client_id: "copilot".to_string(),
+            source: "oauth".to_string(),
+            updated_at: now.to_rfc3339_opts(SecondsFormat::Millis, true),
+            identity: data.identity,
+            windows: data.windows,
+            credits: None,
+            error: None,
+        },
+        Err(error) => AgentUsageSnapshot {
+            client_id: "copilot".to_string(),
+            source: "oauth".to_string(),
+            updated_at: now.to_rfc3339_opts(SecondsFormat::Millis, true),
+            identity: None,
+            windows: Vec::new(),
+            credits: None,
+            error: Some(error),
+        },
+    })
 }
 
 async fn fetch_antigravity() -> AgentUsageSnapshot {

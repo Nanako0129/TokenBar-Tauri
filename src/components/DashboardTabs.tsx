@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { clientInitial, getClientStyle } from '../lib/clients'
 
 interface Props {
@@ -31,10 +31,17 @@ export function DashboardTabs({ clients, active, onChange, kbdHints }: Props) {
   // ⌘1 = Overview, ⌘2… = clients, matching the keyboard handler in App. Only
   // the first nine tabs get a hint since ⌘0 is unbound.
   const hint = (idx: number) => (kbdHints && idx < 9 ? `⌘${idx + 1}` : null)
+  // Keep the active tab in view when the row scrolls horizontally (e.g. keyboard
+  // / arrow navigation can land on a tab that's off-screen).
+  const activeRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ inline: 'nearest', block: 'nearest' })
+  }, [active])
   return (
     <div className="dash-tabs" role="tablist" aria-label="Dashboard sections">
       <button
         type="button"
+        ref={active === 'overview' ? activeRef : undefined}
         className={`dash-tab${active === 'overview' ? ' is-active' : ''}`}
         onClick={() => onChange('overview')}
         role="tab"
@@ -51,6 +58,7 @@ export function DashboardTabs({ clients, active, onChange, kbdHints }: Props) {
           <button
             key={id}
             type="button"
+            ref={isActive ? activeRef : undefined}
             className={`dash-tab${isActive ? ' is-active' : ''}`}
             onClick={() => onChange(id)}
             role="tab"

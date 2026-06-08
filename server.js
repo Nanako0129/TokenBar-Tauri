@@ -153,6 +153,7 @@ function mockAgentUsage() {
   const iso = mins => new Date(nowMs + mins * 60_000).toISOString()
   return {
     generatedAt: now,
+    opencodeSubscriptions: ['Codex', 'Copilot'],
     agents: [
       {
         clientId: 'codex',
@@ -191,6 +192,16 @@ function mockAgentUsage() {
           { label: 'Gemini 3 Pro', usedPercent: 58, remainingPercent: 42, resetsAt: iso(180), resetText: 'Resets in 3h' },
           { label: 'Claude Sonnet 4.6', usedPercent: 12, remainingPercent: 88, resetsAt: iso(300), resetText: 'Resets in 5h' },
           { label: 'Gemini 3 Flash', usedPercent: 4, remainingPercent: 96, resetsAt: iso(60), resetText: 'Resets in 1h' },
+        ],
+      },
+      {
+        clientId: 'copilot',
+        source: 'oauth',
+        updatedAt: now,
+        identity: { plan: 'Individual' },
+        windows: [
+          { label: 'Premium', usedPercent: 70, remainingPercent: 30, resetsAt: iso(60 * 24 * 12), resetText: 'Resets Jul 1' },
+          { label: 'Chat', usedPercent: 5, remainingPercent: 95, resetsAt: iso(60 * 24 * 12), resetText: 'Resets Jul 1' },
         ],
       },
     ],

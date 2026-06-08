@@ -222,20 +222,27 @@ html, body, #root {
 
 /* Dashboard tabs */
 .dash-tabs {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(86px, 1fr);
+  display: flex;
+  flex-wrap: nowrap;
   gap: 6px;
   padding: 4px;
   margin: 2px 0 10px;
   background: var(--control-bg);
   border: 0.5px solid var(--control-border);
   border-radius: 10px;
+  /* Many agent clients overflow the row — scroll horizontally rather than
+     squeezing tabs until their names ellipsize. Native bar hidden (the app
+     draws its own vertical one); scroll via trackpad / shift-wheel. */
   overflow-x: auto;
+  scrollbar-width: none;
+}
+.dash-tabs::-webkit-scrollbar {
+  display: none;
 }
 .dash-tab {
   position: relative;
-  min-width: 0;
+  flex: 0 0 auto;
+  padding: 0 12px;
   height: 42px;
   display: inline-flex;
   align-items: center;
@@ -307,9 +314,6 @@ html, body, #root {
   display: block;
 }
 .dash-tab span:last-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -588,6 +592,38 @@ html, body, #root {
   border-radius: 8px;
   padding: 10px 12px;
   background: rgba(120, 120, 128, 0.06);
+}
+/* Drag-to-reorder: only the grip handle initiates a drag, so normal clicks and
+   scrolls never start one. */
+.limit-drag-handle {
+  flex: 0 0 auto;
+  margin-right: 1px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  opacity: 0.5;
+  transition: opacity 120ms ease;
+}
+.limits-list.is-reordering { user-select: none; cursor: grabbing; }
+.limit-drag-handle:hover { opacity: 0.9; }
+.limit-drag-handle:active { cursor: grabbing; }
+.limit-agent.is-dragging { opacity: 0.4; }
+/* A thin blue line marks exactly where the dragged card will land — at the top
+   edge (dropping above) or bottom edge (dropping below) of the hovered card. */
+.limit-agent.is-drop-above { box-shadow: inset 0 3px 0 -1px var(--blue); }
+.limit-agent.is-drop-below { box-shadow: inset 0 -3px 0 -1px var(--blue); }
+.limits-integration {
+  margin: -2px 0 10px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.limits-integration::before {
+  content: "↔ ";
+  color: var(--blue);
 }
 .limit-agent-head {
   display: flex;

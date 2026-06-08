@@ -101,6 +101,7 @@ export function OverviewView({
           asUsed={limitsAsUsed}
           paceMode={paceMode}
           layout={limitsLayout}
+          restrict
         />
         {chart}
         <ModelBreakdownCard
@@ -117,7 +118,7 @@ export function OverviewView({
   return (
     <div className="dashboard-stack">
       {chart}
-      <AgentLimitsCard clients={dashboardClients} trace={trace} agentUsage={agentUsage} asUsed={limitsAsUsed} paceMode={paceMode} layout={limitsLayout} />
+      <AgentLimitsCard clients={dashboardClients} trace={trace} agentUsage={agentUsage} asUsed={limitsAsUsed} paceMode={paceMode} layout={limitsLayout} reorderable />
       <UsageTraceCard buckets={trace} windowSecs={600} detailed={detailedTrace} title="Live session" />
       <ModelBreakdownCard report={modelReport} clientIds={clientIds} colorFor={colorFor} />
       <StreaksCard longest={stats.streaks.longest} current={stats.streaks.current} />

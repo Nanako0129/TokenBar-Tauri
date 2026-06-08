@@ -1,5 +1,6 @@
 mod animation;
 mod agent_antigravity;
+mod agent_copilot;
 mod agent_history;
 mod agent_usage;
 mod agents_report;
@@ -7,6 +8,7 @@ mod hourly_report;
 mod model_report;
 #[cfg(target_os = "macos")]
 mod native_tray;
+mod opencode_integrations;
 mod state;
 mod tray;
 mod usage_graph;
