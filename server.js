@@ -182,6 +182,17 @@ function mockAgentUsage() {
         ],
         credits: { unlimited: true },
       },
+      {
+        clientId: 'antigravity',
+        source: 'cli',
+        updatedAt: now,
+        identity: { email: 'dev@tokenbar.local', plan: 'Pro' },
+        windows: [
+          { label: 'Gemini 3 Pro', usedPercent: 58, remainingPercent: 42, resetsAt: iso(180), resetText: 'Resets in 3h' },
+          { label: 'Claude Sonnet 4.6', usedPercent: 12, remainingPercent: 88, resetsAt: iso(300), resetText: 'Resets in 5h' },
+          { label: 'Gemini 3 Flash', usedPercent: 4, remainingPercent: 96, resetsAt: iso(60), resetText: 'Resets in 1h' },
+        ],
+      },
     ],
   }
 }

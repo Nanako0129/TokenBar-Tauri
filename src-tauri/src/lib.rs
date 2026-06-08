@@ -1,4 +1,5 @@
 mod animation;
+mod agent_antigravity;
 mod agent_history;
 mod agent_usage;
 mod agents_report;

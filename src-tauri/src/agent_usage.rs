@@ -1,3 +1,4 @@
+use crate::agent_antigravity;
 use crate::agent_history;
 use chrono::{DateTime, SecondsFormat, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
@@ -36,8 +37,8 @@ pub struct AgentUsageSnapshot {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AgentIdentity {
-    email: Option<String>,
-    plan: Option<String>,
+    pub(crate) email: Option<String>,
+    pub(crate) plan: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -68,6 +69,39 @@ pub struct UsageWindow {
 pub struct CreditsSnapshot {
     remaining: Option<f64>,
     unlimited: bool,
+}
+
+impl UsageWindow {
+    /// Build a window from a "remaining fraction" (0..1) — the shape Antigravity
+    /// reports per model. Used-percent is derived; pace/window fields stay empty.
+    pub(crate) fn from_fraction(
+        label: String,
+        remaining_fraction: f64,
+        resets_at: Option<DateTime<Utc>>,
+        now: DateTime<Utc>,
+    ) -> Self {
+        let remaining = (remaining_fraction * 100.0).clamp(0.0, 100.0);
+        UsageWindow {
+            label,
+            used_percent: (100.0 - remaining).max(0.0),
+            remaining_percent: remaining,
+            resets_at: resets_at.map(|d| d.to_rfc3339_opts(SecondsFormat::Millis, true)),
+            reset_text: resets_at.map(|d| reset_text(d, now)),
+            window_minutes: None,
+            historical_expected_percent: None,
+            run_out_probability: None,
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn label_for_test(&self) -> &str {
+        &self.label
+    }
+
+    #[cfg(test)]
+    pub(crate) fn remaining_for_test(&self) -> f64 {
+        self.remaining_percent
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -229,9 +263,35 @@ struct ClaudeRefreshResponse {
 
 pub async fn run() -> AgentUsagePayload {
     let generated_at = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
+    let (codex, claude, antigravity) =
+        tokio::join!(fetch_codex(), fetch_claude(), fetch_antigravity());
     AgentUsagePayload {
         generated_at,
-        agents: vec![fetch_codex().await, fetch_claude().await],
+        agents: vec![codex, claude, antigravity],
+    }
+}
+
+async fn fetch_antigravity() -> AgentUsageSnapshot {
+    let now = Utc::now();
+    match agent_antigravity::fetch(now).await {
+        Ok(fetched) => AgentUsageSnapshot {
+            client_id: "antigravity".to_string(),
+            source: fetched.source,
+            updated_at: now.to_rfc3339_opts(SecondsFormat::Millis, true),
+            identity: fetched.identity,
+            windows: fetched.windows,
+            credits: None,
+            error: None,
+        },
+        Err(error) => AgentUsageSnapshot {
+            client_id: "antigravity".to_string(),
+            source: "oauth".to_string(),
+            updated_at: now.to_rfc3339_opts(SecondsFormat::Millis, true),
+            identity: None,
+            windows: Vec::new(),
+            credits: None,
+            error: Some(error),
+        },
     }
 }
 
@@ -1007,7 +1067,7 @@ fn role(window: Option<&CodexWindow>) -> Option<&'static str> {
     }
 }
 
-fn reset_text(reset: DateTime<Utc>, now: DateTime<Utc>) -> String {
+pub(crate) fn reset_text(reset: DateTime<Utc>, now: DateTime<Utc>) -> String {
     let seconds = (reset - now).num_seconds();
     if seconds <= 0 {
         return "Resets now".to_string();
@@ -1063,7 +1123,7 @@ fn claude_credentials_expired(credentials: &ClaudeCredentials) -> bool {
         .is_some_and(|expires_at| Utc::now() >= expires_at)
 }
 
-fn parse_datetime(value: &str) -> Option<DateTime<Utc>> {
+pub(crate) fn parse_datetime(value: &str) -> Option<DateTime<Utc>> {
     DateTime::parse_from_rfc3339(value)
         .map(|dt| dt.with_timezone(&Utc))
         .ok()
@@ -1095,7 +1155,7 @@ fn form_urlencoded(params: &[(&str, &str)]) -> String {
         .join("&")
 }
 
-fn percent_encode(value: &str) -> String {
+pub(crate) fn percent_encode(value: &str) -> String {
     let mut encoded = String::new();
     for byte in value.bytes() {
         match byte {
@@ -1169,7 +1229,7 @@ fn jwt_plan(token: &str) -> Option<String> {
         .map(str::to_string)
 }
 
-fn clean_plan(value: impl AsRef<str>) -> String {
+pub(crate) fn clean_plan(value: impl AsRef<str>) -> String {
     value
         .as_ref()
         .split(['_', '-'])
