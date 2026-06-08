@@ -1,3 +1,4 @@
+use crate::agent_history;
 use chrono::{DateTime, SecondsFormat, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -50,6 +51,16 @@ pub struct UsageWindow {
     /// Total length of this rate-limit window in minutes. Lets the frontend
     /// derive a usage *pace* (expected vs actual at this point in the window).
     window_minutes: Option<i64>,
+    /// Expected used-percent at this point in the window derived from *historical*
+    /// usage samples (not the naive linear elapsed/duration). Only Codex weekly
+    /// carries this once enough completed weeks have accrued; everything else is
+    /// `None` and the frontend falls back to linear pace.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    historical_expected_percent: Option<f64>,
+    /// Probability (0..1) the window empties before its reset at the historical
+    /// burn rate. Companion to `historical_expected_percent`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    run_out_probability: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -316,11 +327,13 @@ async fn fetch_codex_inner() -> Result<AgentUsageSnapshot, String> {
                 .map(clean_plan)
         }),
     });
-    let windows = codex_windows(
+    let mut windows = codex_windows(
         usage.rate_limit.as_ref(),
         usage.additional_rate_limits.as_deref(),
         now,
     );
+    let account_key = codex_account_key(&credentials, identity.as_ref());
+    enrich_codex_weekly_history(&mut windows, &account_key, now);
     if windows.is_empty() && usage.credits.as_ref().and_then(|c| c.balance).is_none() {
         return Err("Codex usage API returned no rate-limit windows.".to_string());
     }
@@ -695,6 +708,46 @@ fn save_codex_credentials(credentials: &CodexCredentials) -> Result<(), String> 
     fs::write(&credentials.auth_path, data).map_err(|e| format!("save Codex auth.json: {}", e))
 }
 
+/// Stable per-account key for scoping historical samples, so switching ChatGPT
+/// accounts doesn't mix usage curves. Prefer the account id, fall back to email.
+fn codex_account_key(credentials: &CodexCredentials, identity: Option<&AgentIdentity>) -> String {
+    credentials
+        .account_id
+        .clone()
+        .filter(|id| !id.is_empty())
+        .or_else(|| identity.and_then(|i| i.email.clone()))
+        .unwrap_or_else(|| "default".to_string())
+}
+
+/// Record the live Codex weekly reading and, once enough past weeks exist, fill
+/// the window's `historical_expected_percent` / `run_out_probability` so the
+/// frontend can offer a history-based pace alongside the linear one.
+fn enrich_codex_weekly_history(windows: &mut [UsageWindow], account_key: &str, now: DateTime<Utc>) {
+    for window in windows.iter_mut() {
+        if !window.label.eq_ignore_ascii_case("Weekly") {
+            continue;
+        }
+        let (Some(resets_str), Some(minutes)) =
+            (window.resets_at.as_deref(), window.window_minutes)
+        else {
+            continue;
+        };
+        let Some(resets_at) = parse_datetime(resets_str) else {
+            continue;
+        };
+        if let Some(pace) = agent_history::record_and_evaluate(
+            account_key,
+            resets_at.timestamp(),
+            minutes,
+            window.used_percent,
+            now.timestamp(),
+        ) {
+            window.historical_expected_percent = Some(pace.expected_percent);
+            window.run_out_probability = pace.run_out_probability;
+        }
+    }
+}
+
 fn codex_windows(
     rate_limit: Option<&CodexRateLimit>,
     additional_rate_limits: Option<&[CodexAdditionalRateLimit]>,
@@ -816,6 +869,8 @@ fn map_claude_window(
         resets_at: resets_at.map(|date| date.to_rfc3339_opts(SecondsFormat::Millis, true)),
         reset_text: resets_at.map(|date| reset_text(date, now)),
         window_minutes: claude_window_minutes(label),
+        historical_expected_percent: None,
+        run_out_probability: None,
     })
 }
 
@@ -848,6 +903,8 @@ fn claude_extra_usage_window(extra: Option<&ClaudeExtraUsage>) -> Option<UsageWi
         resets_at: None,
         reset_text,
         window_minutes: None,
+        historical_expected_percent: None,
+        run_out_probability: None,
     })
 }
 
@@ -931,6 +988,8 @@ fn map_window(label: &str, window: CodexWindow, now: DateTime<Utc>) -> UsageWind
         resets_at: resets_at.map(|date| date.to_rfc3339_opts(SecondsFormat::Millis, true)),
         reset_text: resets_at.map(|date| reset_text(date, now)),
         window_minutes: (window.limit_window_seconds > 0).then(|| window.limit_window_seconds / 60),
+        historical_expected_percent: None,
+        run_out_probability: None,
     }
 }
 
@@ -959,7 +1018,10 @@ fn reset_text(reset: DateTime<Utc>, now: DateTime<Utc>) -> String {
     }
     let hours = minutes / 60;
     let mins = minutes % 60;
-    if hours < 48 {
+    // Anything spanning a day or more reads in days+hours so the weekly windows
+    // stay consistent across agents (Claude reported 47h, Codex 2d — unify both
+    // to days); sub-day windows (sessions) keep the hours/minutes form.
+    if hours < 24 {
         if mins > 0 {
             return format!("Resets in {}h {}m", hours, mins);
         }

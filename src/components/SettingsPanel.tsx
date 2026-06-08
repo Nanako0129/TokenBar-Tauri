@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react'
 import {
   AnimationStyle,
   ANIMATION_STYLE_LABELS,
+  LimitsLayout,
+  LIMITS_LAYOUT_LABELS,
+  PaceMode,
+  PACE_MODE_LABELS,
   REFRESH_INTERVAL_OPTIONS,
   Settings,
   TrayMode,
@@ -234,6 +238,56 @@ export function SettingsPanel({ open, onClose, settings, onChange }: Props) {
               On, bars count up as quota is used; off, they count down to what's left.
               The color always warns as quota runs low.
             </div>
+
+            <div className="settings-group" style={{ marginTop: 10 }}>
+              {(['full', 'classic'] as LimitsLayout[]).map(l => {
+                const active = settings.limitsLayout === l
+                return (
+                  <button
+                    key={l}
+                    type="button"
+                    className={`settings-row settings-row-radio${active ? ' is-active' : ''}`}
+                    onClick={() => onChange({ ...settings, limitsLayout: l })}
+                    aria-pressed={active}
+                  >
+                    <span className="settings-row-label">{`Layout: ${LIMITS_LAYOUT_LABELS[l]}`}</span>
+                    <span className="settings-row-check">{active && <CheckIcon />}</span>
+                  </button>
+                )
+              })}
+            </div>
+            <div className="settings-hint">
+              <strong>Full</strong> is the wide card with the pace line; <strong>Classic</strong>
+              is the original compact 3-up card without pace.
+            </div>
+
+            {settings.limitsLayout === 'full' && (
+              <>
+                <div className="settings-group" style={{ marginTop: 10 }}>
+                  {(['historical', 'linear', 'off'] as PaceMode[]).map(m => {
+                    const active = settings.paceMode === m
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        className={`settings-row settings-row-radio${active ? ' is-active' : ''}`}
+                        onClick={() => onChange({ ...settings, paceMode: m })}
+                        aria-pressed={active}
+                      >
+                        <span className="settings-row-label">{`Pace: ${PACE_MODE_LABELS[m]}`}</span>
+                        <span className="settings-row-check">{active && <CheckIcon />}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="settings-hint">
+                  The deficit/reserve marker. <strong>Historical</strong> learns your weekly
+                  usage curve (Codex weekly) and shows run-out risk, falling back to linear
+                  until a couple of weeks accrue; <strong>Linear</strong> paces evenly by
+                  the clock; <strong>Off</strong> hides the marker. Classic has no pace.
+                </div>
+              </>
+            )}
           </section>
 
           <section className="settings-section">

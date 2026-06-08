@@ -7,6 +7,7 @@
 // at the current burn rate.
 
 import type { UsageWindow } from './agentUsage'
+import type { PaceMode } from './settings'
 
 export type PaceStage =
   | 'onTrack'
@@ -43,8 +44,45 @@ export function isDeficit(stage: PaceStage): boolean {
   return stage === 'slightlyAhead' || stage === 'ahead' || stage === 'farAhead'
 }
 
-/** Compute pace for a window, or null if it can't be derived yet. */
+/** Compute *linear* pace for a window, or null if it can't be derived yet. */
 export function computePace(window: UsageWindow, now: number = Date.now()): UsagePace | null {
+  return computePaceCore(window, now, null)
+}
+
+/**
+ * Compute pace under the user's chosen mode:
+ * - `off`        → null (no pace marker).
+ * - `historical` → use the backend's historical expected-percent if present,
+ *                  otherwise transparently fall back to linear.
+ * - `linear`     → naive elapsed/duration pace.
+ */
+export function computePaceFor(
+  window: UsageWindow,
+  mode: PaceMode,
+  now: number = Date.now(),
+): UsagePace | null {
+  if (mode === 'off') return null
+  const override =
+    mode === 'historical' && typeof window.historicalExpectedPercent === 'number'
+      ? clamp(window.historicalExpectedPercent, 0, 100)
+      : null
+  const pace = computePaceCore(window, now, override)
+  // In historical mode the run-out *probability* (share of past weeks that hit
+  // the cap) is a better lasts/empty signal than the naive linear burn rate —
+  // otherwise the card could read "in reserve · Projected empty" at once. If
+  // most past weeks lasted, project "Lasts until reset"; codexbar does the same.
+  if (pace && override !== null && typeof window.runOutProbability === 'number') {
+    const lasts = window.runOutProbability < 0.5
+    return { ...pace, willLastToReset: lasts, etaSeconds: lasts ? null : pace.etaSeconds }
+  }
+  return pace
+}
+
+function computePaceCore(
+  window: UsageWindow,
+  now: number,
+  expectedOverride: number | null,
+): UsagePace | null {
   if (!window.resetsAt || !window.windowMinutes || window.windowMinutes <= 0) return null
   const resetsAt = Date.parse(window.resetsAt)
   if (Number.isNaN(resetsAt)) return null
@@ -54,7 +92,9 @@ export function computePace(window: UsageWindow, now: number = Date.now()): Usag
   if (timeUntilReset <= 0 || timeUntilReset > duration) return null
 
   const elapsed = clamp(duration - timeUntilReset, 0, duration)
-  const expected = clamp((elapsed / duration) * 100, 0, 100)
+  // Expected used-percent: historical override when available, else the naive
+  // linear elapsed/duration. The rest (delta/stage/ETA) is identical either way.
+  const expected = expectedOverride ?? clamp((elapsed / duration) * 100, 0, 100)
   const actual = clamp(window.usedPercent, 0, 100)
   if (elapsed === 0 && actual > 0) return null
 
@@ -109,4 +149,12 @@ export function paceEta(pace: UsagePace): string | null {
   if (pace.etaSeconds == null) return null
   const t = durationText(pace.etaSeconds)
   return t === 'now' ? 'Projected empty now' : `Projected empty in ${t}`
+}
+
+/** codexbar-style historical run-out risk, e.g. "≈ 30% run-out risk", or null. */
+export function runOutRiskLabel(window: UsageWindow): string | null {
+  if (typeof window.runOutProbability !== 'number') return null
+  const pct = Math.round(clamp(window.runOutProbability, 0, 1) * 100)
+  if (pct <= 0) return null
+  return `≈ ${pct}% run-out risk`
 }

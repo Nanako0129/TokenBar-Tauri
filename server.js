@@ -148,7 +148,9 @@ function mockGraph(year) {
 }
 
 function mockAgentUsage() {
-  const now = new Date().toISOString()
+  const nowMs = Date.now()
+  const now = new Date(nowMs).toISOString()
+  const iso = mins => new Date(nowMs + mins * 60_000).toISOString()
   return {
     generatedAt: now,
     agents: [
@@ -158,8 +160,12 @@ function mockAgentUsage() {
         updatedAt: now,
         identity: { email: 'dev@tokenbar.local', plan: 'Team' },
         windows: [
-          { label: 'Session', usedPercent: 63, remainingPercent: 37, resetText: 'resets in 2h 14m' },
-          { label: 'Weekly', usedPercent: 41, remainingPercent: 59, resetText: 'resets Tue' },
+          // Session: ~25% through a 5h window but 59% used → "in deficit".
+          { label: 'Session', usedPercent: 59, remainingPercent: 41, resetsAt: iso(225), resetText: 'Resets in 3h 45m', windowMinutes: 300 },
+          // Weekly: ~62% through the week, 71% used. Linear → ~9% in deficit;
+          // historical expected ~76% → ~5% in reserve + run-out risk. The exact
+          // case from the screenshots, to exercise the three pace modes.
+          { label: 'Weekly', usedPercent: 71, remainingPercent: 29, resetsAt: iso(64 * 60), resetText: 'Resets in 2d 16h', windowMinutes: 10080, historicalExpectedPercent: 76, runOutProbability: 0.3 },
           { label: 'gpt-5.2-codex', usedPercent: 72, remainingPercent: 28, resetText: 'resets in 5h' },
         ],
         credits: { remaining: 118.42, unlimited: false },

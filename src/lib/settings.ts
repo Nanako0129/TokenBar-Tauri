@@ -9,6 +9,14 @@ export type TrayMode =
   | 'tokens_per_min'
   | 'hidden'
 export type AnimationStyle = 'cat' | 'parrot'
+// How the agent-limit bars derive their pace marker. 'historical' uses past
+// weekly usage curves (Codex weekly, codexbar-style) and falls back to linear
+// until enough history accrues; 'linear' is the naive elapsed/duration pace;
+// 'off' hides the pace marker and label entirely.
+export type PaceMode = 'historical' | 'linear' | 'off'
+// Agent-limit card density: 'full' is the wide card with the pace line; 'classic'
+// is the original compact pre-redesign layout.
+export type LimitsLayout = 'full' | 'classic'
 
 export interface Settings {
   trayMode: TrayMode
@@ -21,6 +29,10 @@ export interface Settings {
   // When true, agent limit bars fill by amount *used* (counting up); otherwise
   // they fill by amount *remaining* (counting down). Color always tracks health.
   limitsAsUsed: boolean
+  // How the agent-limit pace marker is derived (historical / linear / off).
+  paceMode: PaceMode
+  // Agent-limit card layout density (full / classic).
+  limitsLayout: LimitsLayout
   // How often the dashboard data (graph, models, quota) auto-refreshes, minutes.
   refreshIntervalMin: number
 }
@@ -34,7 +46,20 @@ export const DEFAULT_SETTINGS: Settings = {
   animationStyle: 'cat',
   detailedTrace: false,
   limitsAsUsed: false,
+  paceMode: 'historical',
+  limitsLayout: 'full',
   refreshIntervalMin: 30,
+}
+
+export const PACE_MODE_LABELS: Record<PaceMode, string> = {
+  historical: 'Historical',
+  linear: 'Linear',
+  off: 'Off',
+}
+
+export const LIMITS_LAYOUT_LABELS: Record<LimitsLayout, string> = {
+  full: 'Full',
+  classic: 'Classic',
 }
 
 export const ANIMATION_STYLE_LABELS: Record<AnimationStyle, string> = {

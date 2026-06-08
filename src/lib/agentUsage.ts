@@ -11,6 +11,11 @@ export interface UsageWindow {
   resetText?: string
   /** Total window length in minutes; enables pace (expected vs actual). */
   windowMinutes?: number
+  /** Expected used-percent now from *historical* weekly samples (Codex weekly
+   *  only, once enough past weeks accrued). Absent → fall back to linear pace. */
+  historicalExpectedPercent?: number
+  /** 0..1 chance the window empties before reset at the historical burn rate. */
+  runOutProbability?: number
 }
 
 export interface CreditsSnapshot {

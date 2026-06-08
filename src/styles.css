@@ -718,6 +718,38 @@ html, body, #root {
 .limit-pace.is-deficit { color: #ef4444; }
 .limit-pace.is-reserve { color: #22c55e; }
 
+/* Classic agent-limit layout: the early pre-pace card from the docs overview
+   screenshots — a narrow 3-up grid (single column for one agent), tighter
+   padding, thinner bars, and no pace marker (suppressed in the component). */
+.limit-window-left {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 650;
+}
+.limits-list.is-classic {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.limits-list.is-classic.is-single {
+  grid-template-columns: 1fr;
+}
+.limits-list.is-classic .limit-agent {
+  padding: 8px;
+}
+.limits-list.is-classic .limit-window-meta {
+  font-size: 10px;
+  margin-bottom: 3px;
+}
+.limits-list.is-classic .limit-bar {
+  height: 6px;
+  overflow: hidden;
+}
+.limits-list.is-classic .limit-bar-fill {
+  border-radius: inherit;
+}
+
 /* 2D stacked bar graph — legend is a full-width wrapping row above the chart so
    every stacked model shows, rather than being squeezed into the header. */
 .bar2d-legend {

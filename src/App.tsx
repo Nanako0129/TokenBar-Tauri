@@ -610,6 +610,8 @@ export default function App() {
                   agentUsage={agentUsage.payload}
                   dashboardClients={dashboardClients}
                   limitsAsUsed={settings.limitsAsUsed}
+                  paceMode={settings.paceMode}
+                  limitsLayout={settings.limitsLayout}
                   singleClient={activeTab === 'overview' ? null : activeTab}
                 />
               )}

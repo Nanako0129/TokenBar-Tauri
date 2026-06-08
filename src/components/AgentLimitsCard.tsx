@@ -2,7 +2,8 @@ import React from 'react'
 import { clientInitial, getClientStyle } from '../lib/clients'
 import type { AgentUsagePayload, AgentUsageSnapshot, UsageWindow } from '../lib/agentUsage'
 import type { TraceBucket } from '../lib/usage'
-import { computePace, paceLabel, paceEta, isDeficit } from '../lib/usagePace'
+import { computePaceFor, paceLabel, paceEta, isDeficit, runOutRiskLabel } from '../lib/usagePace'
+import type { PaceMode, LimitsLayout } from '../lib/settings'
 
 interface Props {
   clients: string[]
@@ -12,6 +13,10 @@ interface Props {
   note?: string
   // When true, the bar label reads "% used" instead of "% left".
   asUsed?: boolean
+  // How the pace marker is derived (historical / linear / off).
+  paceMode?: PaceMode
+  // Card density: 'full' (wide, with pace line) or 'classic' (compact).
+  layout?: LimitsLayout
 }
 
 interface LimitRow {
@@ -64,7 +69,8 @@ function mark(id: string) {
   )
 }
 
-export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent limits', note = 'OAuth quota', asUsed = false }: Props) {
+export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent limits', note = 'OAuth quota', asUsed = false, paceMode = 'historical', layout = 'full' }: Props) {
+  const classic = layout === 'classic'
   const liveClients = new Set(trace.filter(t => t.tokens_per_min > 0).map(t => normalizeTraceClient(t.client)))
   const snapshots = new Map((agentUsage?.agents ?? []).map(agent => [agent.clientId, agent]))
   const visibleClients = Array.from(new Set([
@@ -81,7 +87,7 @@ export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent lim
       {visibleClients.length === 0 ? (
         <div className="limits-empty">No supported agents yet</div>
       ) : (
-        <div className="limits-list">
+        <div className={`limits-list${classic && visibleClients.length === 1 ? ' is-single' : ''}${classic ? ' is-classic' : ''}`}>
           {visibleClients.map(id => {
             const style = getClientStyle(id)
             const snapshot = snapshots.get(id)
@@ -111,7 +117,9 @@ export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent lim
                     const hasData = row.remainingPercent !== undefined && row.usedPercent !== undefined
                     const remaining = hasData ? row.remainingPercent! : undefined
                     const used = hasData ? row.usedPercent! : undefined
-                    const pace = hasData ? computePace(row as UsageWindow) : null
+                    // Pace is suppressed entirely in the classic layout and when
+                    // the user turns it off; otherwise it follows the chosen mode.
+                    const pace = hasData && !classic ? computePaceFor(row as UsageWindow, paceMode) : null
                     // The bar fills by used (counting up) or remaining (counting
                     // down) per the setting; the pace marker sits on the same
                     // axis so it lines up with the fill either way.
@@ -128,6 +136,27 @@ export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent lim
                           ? `${Math.round(clamp(used as number))}% used`
                           : `${Math.round(clamp(remaining))}% left`
                     const eta = pace ? paceEta(pace) : null
+                    // Historical run-out risk only pairs with the historical pace.
+                    const risk = pace && paceMode === 'historical' ? runOutRiskLabel(row as UsageWindow) : null
+
+                    if (classic) {
+                      return (
+                        <div className="limit-window" key={row.label}>
+                          <div className="limit-window-meta">
+                            <span>{row.label}</span>
+                            <span>{row.resetText || leftLabel}</span>
+                          </div>
+                          <div className="limit-bar">
+                            <div
+                              className="limit-bar-fill"
+                              style={{ width: `${clamp(fill)}%`, background: gaugeColor(remaining, style.color) }}
+                            />
+                          </div>
+                          {row.resetText && <div className="limit-window-left">{leftLabel}</div>}
+                        </div>
+                      )
+                    }
+
                     return (
                       <div className="limit-window" key={row.label}>
                         <div className="limit-window-meta">
@@ -151,7 +180,7 @@ export function AgentLimitsCard({ clients, trace, agentUsage, title = 'Agent lim
                           <span className="limit-left">{leftLabel}</span>
                           {pace && (
                             <span className={`limit-pace${isDeficit(pace.stage) ? ' is-deficit' : ' is-reserve'}`}>
-                              {paceLabel(pace)}{eta ? ` · ${eta}` : ''}
+                              {paceLabel(pace)}{eta ? ` · ${eta}` : ''}{risk ? ` · ${risk}` : ''}
                             </span>
                           )}
                         </div>

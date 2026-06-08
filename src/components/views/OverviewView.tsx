@@ -10,6 +10,7 @@ import type { ColorFor } from '../../lib/modelColors'
 import type { GridLayout } from '../../lib/grid'
 import type { TraceBucket } from '../../lib/usage'
 import type { AgentUsagePayload } from '../../lib/agentUsage'
+import type { PaceMode, LimitsLayout } from '../../lib/settings'
 
 interface Props {
   payload: UsagePayload
@@ -32,6 +33,9 @@ interface Props {
   dashboardClients: string[]
   // Agent limit bars fill by used (true) or remaining (false).
   limitsAsUsed: boolean
+  // Pace marker source (historical / linear / off) and card layout density.
+  paceMode: PaceMode
+  limitsLayout: LimitsLayout
   // When set, this view shows a single client's slice; otherwise it's the
   // all-agent overview (which also carries the live-session trace).
   singleClient: string | null
@@ -60,6 +64,8 @@ export function OverviewView({
   agentUsage,
   dashboardClients,
   limitsAsUsed,
+  paceMode,
+  limitsLayout,
   singleClient,
 }: Props) {
   const chart = (
@@ -93,6 +99,8 @@ export function OverviewView({
           title={`${style.displayName} limits`}
           note="Session / weekly / model limits"
           asUsed={limitsAsUsed}
+          paceMode={paceMode}
+          layout={limitsLayout}
         />
         {chart}
         <ModelBreakdownCard
@@ -109,7 +117,7 @@ export function OverviewView({
   return (
     <div className="dashboard-stack">
       {chart}
-      <AgentLimitsCard clients={dashboardClients} trace={trace} agentUsage={agentUsage} asUsed={limitsAsUsed} />
+      <AgentLimitsCard clients={dashboardClients} trace={trace} agentUsage={agentUsage} asUsed={limitsAsUsed} paceMode={paceMode} layout={limitsLayout} />
       <UsageTraceCard buckets={trace} windowSecs={600} detailed={detailedTrace} title="Live session" />
       <ModelBreakdownCard report={modelReport} clientIds={clientIds} colorFor={colorFor} />
       <StreaksCard longest={stats.streaks.longest} current={stats.streaks.current} />
