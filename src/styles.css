@@ -1924,6 +1924,39 @@ html, body, #root {
   text-align: right;
   min-width: 52px;
 }
+/* Header right cluster: subtitle + the Timeline/Profile toggle. */
+.model-head-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Timeline rows carry a full "MM-DD HH:00" stamp, so the label column is wider
+   than the Profile view's bare "HH:00". The live hour is accented. */
+.hourly-row.is-timeline {
+  grid-template-columns: 78px minmax(0, 1fr) auto auto;
+}
+.hourly-row.is-current .hourly-hour {
+  color: var(--blue);
+  font-weight: 700;
+}
+/* Timeline "load more" — grows the rendered window on demand so long histories
+   don't mount thousands of rows up front. */
+.hourly-more {
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 0;
+  border: 0.5px solid var(--card-border);
+  border-radius: 6px;
+  background: rgba(120, 120, 128, 0.08);
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.hourly-more:hover {
+  background: rgba(120, 120, 128, 0.16);
+}
 
 /* ── Agents view (sub-agents by cost) ──────────────────────────────────── */
 .agents-rows {
