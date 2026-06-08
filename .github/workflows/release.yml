@@ -77,9 +77,53 @@ jobs:
           hdiutil convert "$DMG_RW" -format UDZO -imagekey zlib-level=9 -o "$DMG" -ov >/dev/null
           rm -f "$DMG_RW"
 
+      - name: Generate release notes
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          # Optional override; defaults to deepseek-v4-pro. This account also
+          # exposes deepseek-v4-flash. Set the Actions variable to switch.
+          DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          NOTES_FILE="src-tauri/target/release/bundle/release-notes.md"
+          mkdir -p "$(dirname "$NOTES_FILE")"
+
+          # 1) Deterministic baseline: a grouped changelog from this tag's commits.
+          brew list git-cliff >/dev/null 2>&1 || brew install git-cliff
+          CLIFF="$(git-cliff --config cliff.toml --current --strip all 2>/dev/null || true)"
+          [[ -z "$CLIFF" ]] && CLIFF="$(git-cliff --config cliff.toml --latest --strip all 2>/dev/null || true)"
+          printf '%s\n' "$CLIFF" > "$NOTES_FILE"
+
+          # 2) Optional polish into user-facing prose via DeepSeek (OpenAI-compatible).
+          #    Any failure (missing key, non-200, empty) falls back to the git-cliff text.
+          if [[ -n "${DEEPSEEK_API_KEY:-}" && -s "$NOTES_FILE" ]]; then
+            MODEL="${DEEPSEEK_MODEL:-deepseek-v4-pro}"
+            PREV="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
+            if [[ -n "$PREV" ]]; then RANGE="${PREV}..${TAG}"; else RANGE="${TAG}"; fi
+            COMMITS="$(git log --no-merges --pretty='- %s' "$RANGE" 2>/dev/null || true)"
+            STAT="$(git diff --stat "$RANGE" 2>/dev/null | tail -1 || true)"
+            PROMPT="$(printf 'Write concise, user-facing release notes for TokenBar %s, a macOS menu-bar AI token-usage monitor. Use short markdown bullets grouped under "### New" and "### Fixes" when applicable. Be specific and factual — only describe changes present below, do not invent. Keep it tight.\n\nGrouped changelog:\n%s\n\nCommits:\n%s\n\nDiff summary: %s\n' "$VERSION" "$CLIFF" "$COMMITS" "$STAT")"
+            REQ="$(jq -n --arg m "$MODEL" --arg p "$PROMPT" '{model:$m, stream:false, temperature:0.3, messages:[{role:"user", content:$p}]}')"
+            RESP="$(curl -sS --max-time 60 https://api.deepseek.com/chat/completions \
+              -H "Authorization: Bearer ${DEEPSEEK_API_KEY}" \
+              -H "Content-Type: application/json" \
+              -d "$REQ" 2>/dev/null || true)"
+            AI="$(printf '%s' "$RESP" | jq -r '.choices[0].message.content // empty' 2>/dev/null || true)"
+            if [[ -n "$AI" ]]; then
+              printf '%s\n' "$AI" > "$NOTES_FILE"
+            else
+              echo "::warning::DeepSeek polish unavailable; using git-cliff changelog"
+            fi
+          fi
+
+          [[ -s "$NOTES_FILE" ]] || printf 'TokenBar %s\n' "$VERSION" > "$NOTES_FILE"
+          echo "----- release notes -----"
+          cat "$NOTES_FILE"
+
       - name: Generate latest.json
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.meta.outputs.version }}
           TAG: ${{ github.ref_name }}
         run: |
@@ -91,14 +135,7 @@ jobs:
           PUB_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           DOWNLOAD_BASE="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}"
 
-          TAG_OBJECT="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}")"
-          TAG_TYPE="$(jq -r '.object.type' <<< "$TAG_OBJECT")"
-          TAG_SHA="$(jq -r '.object.sha' <<< "$TAG_OBJECT")"
-          if [[ "$TAG_TYPE" == "tag" ]]; then
-            gh api "repos/${GITHUB_REPOSITORY}/git/tags/${TAG_SHA}" --jq '.message' > "$NOTES_FILE"
-          else
-            printf 'TokenBar %s\n' "$VERSION" > "$NOTES_FILE"
-          fi
+          # release-notes.md is produced by the "Generate release notes" step.
           if [[ ! -s "$NOTES_FILE" ]]; then
             printf 'TokenBar %s\n' "$VERSION" > "$NOTES_FILE"
           fi
