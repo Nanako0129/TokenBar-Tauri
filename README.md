@@ -91,6 +91,24 @@ If you installed TokenBar before `v0.4.2`, reinstall the cask once:
 brew reinstall --cask nanako0129/tokenbar/tokenbar
 ```
 
+### Code signing & Gatekeeper
+
+TokenBar is not Apple-notarized yet. It is a free, source-available project, and
+the Apple Developer Program fee is not justified at this stage. Because of that,
+the Homebrew cask removes the `com.apple.quarantine` attribute on install so the
+app launches without a Gatekeeper first-launch prompt. In practical terms, the
+cask bypasses Gatekeeper's first-launch check for TokenBar.
+
+Why you can still audit and trust it:
+
+- TokenBar is MIT-licensed and source-available; you can build it yourself with
+  `npm run install:local`.
+- No telemetry, no account; session logs are read locally and never leave your machine.
+- Network access is limited to the update manifest and public model-pricing data.
+- In-app updates are verified against an embedded minisign public key before install.
+
+Prefer to keep Gatekeeper in charge? Build from source instead of using the cask.
+
 The in-app updater checks GitHub Releases on launch and every 30 minutes; signed
 artifacts are verified against the embedded public key before install.
 

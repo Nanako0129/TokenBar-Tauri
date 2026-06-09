@@ -85,6 +85,19 @@ brew install --cask nanako0129/tokenbar/tokenbar
 brew reinstall --cask nanako0129/tokenbar/tokenbar
 ```
 
+### Code signing과 Gatekeeper
+
+TokenBar는 아직 Apple notarization을 받지 않았습니다. 무료이며 소스 확인이 가능한 프로젝트이고, 현 단계에서는 Apple Developer Program 비용을 정당화하기 어렵기 때문입니다. 그래서 Homebrew cask는 설치 시 `com.apple.quarantine` 속성을 제거해 앱이 Gatekeeper의 첫 실행 확인 없이 열리도록 합니다. 즉, 이 cask는 TokenBar에 대해 Gatekeeper의 첫 실행 검사를 우회합니다.
+
+그래도 감사하고 신뢰할 수 있는 이유:
+
+- TokenBar는 MIT 라이선스이며 소스 확인이 가능합니다. `npm run install:local`로 직접 빌드할 수 있습니다.
+- 텔레메트리와 계정이 없습니다. session logs는 로컬에서만 읽고 사용자의 기기를 떠나지 않습니다.
+- 네트워크 접근은 업데이트 매니페스트와 공개 model 가격 데이터로 제한됩니다.
+- 인앱 업데이트는 설치 전에 내장된 minisign 공개키로 검증됩니다.
+
+Gatekeeper가 그대로 관리하길 원한다면 cask 대신 소스에서 직접 빌드하세요.
+
 인앱 업데이터는 실행 시 + 30분마다 GitHub Releases를 확인합니다. 서명된 아티팩트는 내장된 공개키로 검증된 뒤 설치됩니다.
 
 ---

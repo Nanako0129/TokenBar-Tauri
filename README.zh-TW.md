@@ -85,6 +85,19 @@ brew install --cask nanako0129/tokenbar/tokenbar
 brew reinstall --cask nanako0129/tokenbar/tokenbar
 ```
 
+### Code signing 與 Gatekeeper
+
+TokenBar 目前尚未經 Apple notarization。它是免費、原始碼可審計的專案，而現階段還不值得為 Developer Program 支付年費。因此 Homebrew cask 會在安裝時移除 `com.apple.quarantine` 屬性，讓 app 啟動時不會遇到 Gatekeeper 的首次開啟提示。實際上，這代表 cask 會替 TokenBar 繞過 Gatekeeper 的首次啟動檢查。
+
+你仍然可以審計並信任它的理由：
+
+- TokenBar 採 MIT 授權且原始碼可審計；你也可以用 `npm run install:local` 自行建置。
+- 沒有 telemetry、不需要帳號；session logs 只會在本機讀取，不會離開你的機器。
+- 網路存取僅限於更新資訊清單與公開 model 定價資料。
+- 內建更新會先以內嵌 minisign 公鑰驗證後才安裝。
+
+如果你希望完整交給 Gatekeeper 把關，請改用原始碼自行建置，不要使用 cask。
+
 內建更新器會在啟動時與每 30 分鐘檢查 GitHub Releases；簽章產物會先以內嵌公鑰驗證後才安裝。
 
 ---
