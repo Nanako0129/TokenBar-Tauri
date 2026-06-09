@@ -9,13 +9,13 @@ const brew = 'brew install --cask nanako0129/tokenbar/tokenbar'
       <p class="eyebrow">Two minutes, Apple Silicon</p>
       <h2>Install, click the cat, done.</h2>
       <p>
-        TokenBar ships as a signed DMG for <strong>macOS 11+ on Apple Silicon</strong>.
-        The fully-qualified cask auto-taps — no separate <code>brew tap</code> step.
+        TokenBar installs through Homebrew for <strong>macOS 11+ on Apple Silicon</strong>.
+        The fully-qualified cask auto-taps, so there is no separate <code>brew tap</code> step.
       </p>
       <ul class="notes">
         <li><span class="dot"></span>The in-app updater checks GitHub Releases on launch and every 30 min.</li>
         <li><span class="dot"></span>Signed artifacts are verified against the embedded public key before install.</li>
-        <li><span class="dot"></span>Prefer a one-off? Grab the DMG from Releases.</li>
+        <li><span class="dot"></span>Building from source is available for development and local testing.</li>
       </ul>
     </div>
 
@@ -25,7 +25,6 @@ const brew = 'brew install --cask nanako0129/tokenbar/tokenbar'
         <pre class="term-body"><code><span class="c">$</span> {brew}</code></pre>
         <button class="term-copy mono" id="brew2" type="button">Copy command</button>
       </div>
-      <a class="btn btn-ghost full" href={`${repo}/releases/latest`}>Download the DMG ↗</a>
       <p class="src">
         Building from source? <a href={`${repo}#build-from-source`}>Rust + Node ≥ 22</a>.
       </p>

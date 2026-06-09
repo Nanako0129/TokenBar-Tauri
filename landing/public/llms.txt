@@ -23,7 +23,6 @@
 
 ## Install
 - Homebrew: `brew install --cask nanako0129/tokenbar/tokenbar`
-- Or download the DMG from GitHub Releases: https://github.com/Nanako0129/TokenBar/releases
 
 ## Links
 - Repository: https://github.com/Nanako0129/TokenBar

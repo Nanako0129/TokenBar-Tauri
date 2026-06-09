@@ -79,8 +79,6 @@ brew install --cask nanako0129/tokenbar/tokenbar
 > [nanako0129/homebrew-tokenbar](https://github.com/Nanako0129/homebrew-tokenbar)를
 > 자동으로 tap 합니다 — 별도의 `brew tap` 단계가 필요 없습니다(Homebrew는 tap owner를 소문자로 처리합니다).
 
-GitHub Releases에는 인앱 업데이터가 사용하는 서명된 app archive가 올라갑니다. 무료 설치 경로로는 Homebrew cask를 권장합니다. 앱을 설치하고, notarize되지 않은 이 빌드의 macOS 다운로드 quarantine을 제거합니다.
-
 인앱 업데이터는 실행 시 + 30분마다 GitHub Releases를 확인합니다. 서명된 아티팩트는 내장된 공개키로 검증된 뒤 설치됩니다.
 
 ---
