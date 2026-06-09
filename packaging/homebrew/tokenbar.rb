@@ -12,16 +12,16 @@
 #
 # Requirements for `brew install` to work:
 #   1. The tap repo must be PUBLIC.
-#   2. The main repo's release assets (the .dmg) must be publicly downloadable.
+#   2. The main repo's release assets must be publicly downloadable.
 #
-# After each release, bump `version` and replace `sha256` with the real DMG
-# checksum (`shasum -a 256 TokenBar_<version>_aarch64.dmg`), or run the release
-# script which can patch it for you.
+# After each release, bump `version` and replace `sha256` with the real app
+# archive checksum (`shasum -a 256 TokenBar.app.tar.gz`), or run the release
+# workflow which can patch it for you.
 cask "tokenbar" do
   version "0.1.29"
-  sha256 :no_check # replace with the real DMG sha256 once a release is published
+  sha256 :no_check # replace with the real app archive sha256 once a release is published
 
-  url "https://github.com/Nanako0129/TokenBar/releases/download/v#{version}/TokenBar_#{version}_aarch64.dmg"
+  url "https://github.com/Nanako0129/TokenBar/releases/download/v#{version}/TokenBar.app.tar.gz"
   name "TokenBar"
   desc "AI token usage monitor for the macOS menu bar"
   homepage "https://github.com/Nanako0129/TokenBar"
@@ -35,6 +35,11 @@ cask "tokenbar" do
   depends_on arch: :arm64
 
   app "TokenBar.app"
+
+  postflight do
+    system_command "/usr/bin/xattr",
+      args: ["-dr", "com.apple.quarantine", "#{appdir}/TokenBar.app"]
+  end
 
   zap trash: [
     "~/Library/Application Support/com.nyanako.tokenbar",

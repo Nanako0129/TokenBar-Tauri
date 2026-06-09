@@ -79,7 +79,7 @@ brew install --cask nanako0129/tokenbar/tokenbar
 > [nanako0129/homebrew-tokenbar](https://github.com/Nanako0129/homebrew-tokenbar)
 > ——不需要另外執行 `brew tap`（Homebrew 會把 tap owner 轉成小寫）。
 
-或者到 [Releases](https://github.com/Nanako0129/TokenBar/releases) 下載 `TokenBar_<version>_aarch64.dmg`。
+GitHub Releases 會發佈內建更新器使用的簽章 app archive。免費路線建議使用 Homebrew cask；它會安裝 app，並替這個未公證 build 清除 macOS 下載 quarantine。
 
 內建更新器會在啟動時與每 30 分鐘檢查 GitHub Releases；簽章產物會先以內嵌公鑰驗證後才安裝。
 

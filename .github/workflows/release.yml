@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   release:
-    name: Build & publish DMG
+    name: Build & publish app archive
     runs-on: macos-14
     outputs:
       version: ${{ steps.meta.outputs.version }}
@@ -106,24 +106,7 @@ jobs:
           if [[ -z "${APPLE_ID:-}" || -z "${APPLE_PASSWORD:-}" || -z "${APPLE_TEAM_ID:-}" ]]; then
             unset APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID
           fi
-          npx tauri build --config '{"bundle":{"createUpdaterArtifacts":true}}'
-
-      - name: Strip .VolumeIcon.icns from DMG
-        env:
-          VERSION: ${{ steps.meta.outputs.version }}
-        run: |
-          set -euo pipefail
-          DMG="src-tauri/target/release/bundle/dmg/TokenBar_${VERSION}_aarch64.dmg"
-          DMG_RW="${DMG%.dmg}.rw.dmg"
-          DMG_MNT="$(mktemp -d)"
-          hdiutil convert "$DMG" -format UDRW -o "$DMG_RW" -ov >/dev/null
-          hdiutil attach -nobrowse -mountpoint "$DMG_MNT" "$DMG_RW" >/dev/null
-          rm -f "$DMG_MNT/.VolumeIcon.icns"
-          SetFile -a c "$DMG_MNT" 2>/dev/null || true
-          hdiutil detach "$DMG_MNT" >/dev/null
-          rmdir "$DMG_MNT" 2>/dev/null || true
-          hdiutil convert "$DMG_RW" -format UDZO -imagekey zlib-level=9 -o "$DMG" -ov >/dev/null
-          rm -f "$DMG_RW"
+          npx tauri build --bundles app --config '{"bundle":{"createUpdaterArtifacts":true}}'
 
       - name: Generate release notes
         env:
@@ -206,33 +189,30 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          DMG="src-tauri/target/release/bundle/dmg/TokenBar_${VERSION}_aarch64.dmg"
           APP_TGZ="src-tauri/target/release/bundle/macos/TokenBar.app.tar.gz"
           APP_SIG="src-tauri/target/release/bundle/macos/TokenBar.app.tar.gz.sig"
           LATEST_JSON="src-tauri/target/release/bundle/latest.json"
           NOTES_FILE="src-tauri/target/release/bundle/release-notes.md"
           if [[ -s "$NOTES_FILE" ]]; then
             gh release create "$TAG" \
-              "$DMG" "$APP_TGZ" "$APP_SIG" "$LATEST_JSON" \
+              "$APP_TGZ" "$APP_SIG" "$LATEST_JSON" \
               --title "TokenBar $VERSION" \
               --notes-file "$NOTES_FILE"
           else
             gh release create "$TAG" \
-              "$DMG" "$APP_TGZ" "$APP_SIG" "$LATEST_JSON" \
+              "$APP_TGZ" "$APP_SIG" "$LATEST_JSON" \
               --title "TokenBar $VERSION" \
               --notes "TokenBar $VERSION"
           fi
 
-      - name: Compute DMG sha256
+      - name: Compute app archive sha256
         id: sha
-        env:
-          VERSION: ${{ steps.meta.outputs.version }}
         run: |
           set -euo pipefail
-          DMG="src-tauri/target/release/bundle/dmg/TokenBar_${VERSION}_aarch64.dmg"
-          SHA=$(shasum -a 256 "$DMG" | awk '{print $1}')
+          APP_TGZ="src-tauri/target/release/bundle/macos/TokenBar.app.tar.gz"
+          SHA=$(shasum -a 256 "$APP_TGZ" | awk '{print $1}')
           echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
-          echo "DMG sha256: $SHA"
+          echo "app archive sha256: $SHA"
 
   homebrew:
     name: Update Homebrew tap
@@ -259,8 +239,24 @@ jobs:
           fi
           sed -i.bak -E "s|^  version \"[^\"]*\"$|  version \"${VERSION}\"|" "$CASK"
           sed -i.bak -E "s|^  sha256 \"[^\"]*\"$|  sha256 \"${SHA256}\"|" "$CASK"
+          sed -i.bak -E "s|^  url \".*\"$|  url \"https://github.com/Nanako0129/TokenBar/releases/download/v#{version}/TokenBar.app.tar.gz\"|" "$CASK"
           sed -i.bak -E "s|^  desc \"[^\"]*\"$|  desc \"Menubar dashboard for local AI token usage\"|" "$CASK"
           sed -i.bak -E '/^  depends_on formula: "tokscale"$/d' "$CASK"
+          if ! grep -q 'com.apple.quarantine' "$CASK"; then
+            awk '
+              /^  app "TokenBar.app"$/ {
+                print
+                print ""
+                print "  postflight do"
+                print "    system_command \"/usr/bin/xattr\","
+                print "      args: [\"-dr\", \"com.apple.quarantine\", \"#{appdir}/TokenBar.app\"]"
+                print "  end"
+                next
+              }
+              { print }
+            ' "$CASK" > "${CASK}.new"
+            mv "${CASK}.new" "$CASK"
+          fi
           rm -f "${CASK}.bak"
           echo "--- updated cask ---"
           cat "$CASK"
@@ -274,6 +270,14 @@ jobs:
           fi
           if grep -q 'depends_on formula: "tokscale"' "$CASK"; then
             echo "::error::tokscale dependency still present in cask"
+            exit 1
+          fi
+          if ! grep -q 'TokenBar.app.tar.gz' "$CASK"; then
+            echo "::error::cask url was not switched to app archive"
+            exit 1
+          fi
+          if ! grep -q 'com.apple.quarantine' "$CASK"; then
+            echo "::error::postflight quarantine removal missing"
             exit 1
           fi
 

@@ -85,7 +85,9 @@ brew install --cask nanako0129/tokenbar/tokenbar
 > [nanako0129/homebrew-tokenbar](https://github.com/Nanako0129/homebrew-tokenbar)
 > — no separate `brew tap` step needed (Homebrew lowercases the tap owner).
 
-Or grab the `TokenBar_<version>_aarch64.dmg` from [Releases](https://github.com/Nanako0129/TokenBar/releases).
+GitHub Releases publish the signed app archive used by the updater. For the
+smoothest free install path, use the Homebrew cask; it installs the app and
+clears macOS's download quarantine for this unsigned build.
 
 The in-app updater checks GitHub Releases on launch and every 30 minutes; signed
 artifacts are verified against the embedded public key before install.
