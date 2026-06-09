@@ -85,6 +85,12 @@ brew install --cask nanako0129/tokenbar/tokenbar
 > [nanako0129/homebrew-tokenbar](https://github.com/Nanako0129/homebrew-tokenbar)
 > — no separate `brew tap` step needed (Homebrew lowercases the tap owner).
 
+If you installed TokenBar before `v0.4.2`, reinstall the cask once:
+
+```sh
+brew reinstall --cask nanako0129/tokenbar/tokenbar
+```
+
 The in-app updater checks GitHub Releases on launch and every 30 minutes; signed
 artifacts are verified against the embedded public key before install.
 

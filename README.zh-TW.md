@@ -79,6 +79,12 @@ brew install --cask nanako0129/tokenbar/tokenbar
 > [nanako0129/homebrew-tokenbar](https://github.com/Nanako0129/homebrew-tokenbar)
 > ——不需要另外執行 `brew tap`（Homebrew 會把 tap owner 轉成小寫）。
 
+如果你曾安裝 `v0.4.2` 之前的 TokenBar，請重新安裝一次 cask：
+
+```sh
+brew reinstall --cask nanako0129/tokenbar/tokenbar
+```
+
 內建更新器會在啟動時與每 30 分鐘檢查 GitHub Releases；簽章產物會先以內嵌公鑰驗證後才安裝。
 
 ---

@@ -79,6 +79,12 @@ brew install --cask nanako0129/tokenbar/tokenbar
 > [nanako0129/homebrew-tokenbar](https://github.com/Nanako0129/homebrew-tokenbar)를
 > 자동으로 tap 합니다 — 별도의 `brew tap` 단계가 필요 없습니다(Homebrew는 tap owner를 소문자로 처리합니다).
 
+`v0.4.2` 이전에 TokenBar를 설치했다면 cask를 한 번 다시 설치하세요:
+
+```sh
+brew reinstall --cask nanako0129/tokenbar/tokenbar
+```
+
 인앱 업데이터는 실행 시 + 30분마다 GitHub Releases를 확인합니다. 서명된 아티팩트는 내장된 공개키로 검증된 뒤 설치됩니다.
 
 ---
