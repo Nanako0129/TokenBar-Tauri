@@ -54,11 +54,59 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Import Apple Developer certificate
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${APPLE_CERTIFICATE:-}" ]]; then
+            echo "APPLE_CERTIFICATE is not set; using ad-hoc signingIdentity from tauri.conf.json"
+            exit 0
+          fi
+
+          : "${APPLE_CERTIFICATE_PASSWORD:?APPLE_CERTIFICATE_PASSWORD is required when APPLE_CERTIFICATE is set}"
+          KEYCHAIN_PASSWORD="${KEYCHAIN_PASSWORD:-$(openssl rand -base64 32)}"
+
+          echo "$APPLE_CERTIFICATE" | base64 --decode > certificate.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -lut 21600 build.keychain
+          security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+
+          if [[ -z "${APPLE_SIGNING_IDENTITY:-}" ]]; then
+            APPLE_SIGNING_IDENTITY="$(security find-identity -v -p codesigning build.keychain | awk -F '"' '/Developer ID Application/ {print $2; exit}')"
+          fi
+          if [[ -z "${APPLE_SIGNING_IDENTITY:-}" ]]; then
+            echo "::error::No Developer ID Application signing identity found in imported certificate"
+            security find-identity -v -p codesigning build.keychain || true
+            exit 1
+          fi
+
+          echo "APPLE_SIGNING_IDENTITY=$APPLE_SIGNING_IDENTITY" >> "$GITHUB_ENV"
+          echo "Imported signing identity: $APPLE_SIGNING_IDENTITY"
+
       - name: Build Tauri app
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        run: npx tauri build
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${APPLE_SIGNING_IDENTITY:-}" ]]; then
+            unset APPLE_SIGNING_IDENTITY
+            unset APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID
+          fi
+          if [[ -z "${APPLE_ID:-}" || -z "${APPLE_PASSWORD:-}" || -z "${APPLE_TEAM_ID:-}" ]]; then
+            unset APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID
+          fi
+          npx tauri build --config '{"bundle":{"createUpdaterArtifacts":true}}'
 
       - name: Strip .VolumeIcon.icns from DMG
         env:

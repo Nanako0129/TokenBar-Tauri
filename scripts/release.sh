@@ -48,7 +48,7 @@ APP_SIG="$BUNDLE_DIR/macos/TokenBar.app.tar.gz.sig"
 echo "==> Building release with updater artifacts"
 TAURI_SIGNING_PRIVATE_KEY="$(cat "$KEY_PATH")" \
   TAURI_SIGNING_PRIVATE_KEY_PASSWORD="${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-}" \
-  pnpm tauri build
+  pnpm tauri build --config '{"bundle":{"createUpdaterArtifacts":true}}'
 
 for f in "$DMG" "$APP_TGZ" "$APP_SIG"; do
   if [[ ! -f "$f" ]]; then

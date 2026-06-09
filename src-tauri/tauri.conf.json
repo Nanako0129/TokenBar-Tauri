@@ -42,7 +42,7 @@
   },
   "bundle": {
     "active": true,
-    "createUpdaterArtifacts": true,
+    "createUpdaterArtifacts": false,
     "targets": ["app", "dmg"],
     "icon": [
       "icons/icon.png",
@@ -50,6 +50,7 @@
     ],
     "macOS": {
       "minimumSystemVersion": "11.0",
+      "signingIdentity": "-",
       "exceptionDomain": "localhost",
       "dmg": {
         "background": null,
