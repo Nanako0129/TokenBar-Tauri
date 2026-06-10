@@ -79,6 +79,9 @@ export interface ModelReport {
   totalCacheWrite: number
   totalMessages: number
   totalCost: number
+  /** Unix-seconds time the LiteLLM pricing dataset was last fetched upstream;
+   *  null before the first fetch. Drives the "prices updated …" hint. */
+  pricingUpdatedAt?: number | null
 }
 
 export interface ModelReportEnvelope {

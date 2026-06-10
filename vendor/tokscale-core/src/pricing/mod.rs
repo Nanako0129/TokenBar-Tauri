@@ -9,13 +9,35 @@ use custom::CustomPricing;
 use lookup::{compute_cost, LookupResult, PricingLookup};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::OnceCell;
+use std::time::{Duration, Instant};
+use tokio::sync::RwLock;
 
 use crate::TokenBreakdown;
 
 pub use litellm::ModelPricing;
 
-static PRICING_SERVICE: OnceCell<Arc<PricingService>> = OnceCell::const_new();
+/// In-memory pricing snapshot plus the instant it was fetched, so the process
+/// -wide service can be refreshed on a TTL instead of being frozen for the
+/// whole process lifetime (the old `OnceCell` behaviour).
+struct CachedService {
+    service: Arc<PricingService>,
+    fetched_at: Instant,
+}
+
+static PRICING_SERVICE: RwLock<Option<CachedService>> = RwLock::const_new(None);
+
+/// How long an in-memory pricing snapshot is reused before a refresh is
+/// attempted. Aligned with the on-disk LiteLLM cache TTL (1h, see
+/// `cache::CACHE_TTL_SECS`) so a refresh past this point re-reads the file
+/// cache cheaply and only hits the network when that, too, has gone stale.
+const IN_MEMORY_TTL: Duration = Duration::from_secs(3600);
+
+/// Unix-seconds time the LiteLLM pricing dataset was last fetched from upstream
+/// (the on-disk cache write time), or `None` when no cache exists yet. Drives
+/// the "prices updated …" hint in the UI.
+pub fn pricing_cached_at() -> Option<u64> {
+    litellm::cached_at()
+}
 
 // @keep: documents non-obvious filtering behavior — without this, the next person
 // will wonder why github_copilot entries disappear from the pricing data.
@@ -153,10 +175,43 @@ impl PricingService {
     }
 
     pub async fn get_or_init() -> Result<Arc<PricingService>, String> {
-        PRICING_SERVICE
-            .get_or_try_init(|| async { Self::fetch_inner().await.map(Arc::new) })
-            .await
-            .map(Arc::clone)
+        // Fast path: a fresh in-memory snapshot serves without taking the write
+        // lock, so the common case (called on every refresh tick) is cheap.
+        {
+            let guard = PRICING_SERVICE.read().await;
+            if let Some(cached) = guard.as_ref() {
+                if cached.fetched_at.elapsed() < IN_MEMORY_TTL {
+                    return Ok(Arc::clone(&cached.service));
+                }
+            }
+        }
+
+        // Slow path: snapshot is missing or past its TTL — refetch under the
+        // write lock, re-checking in case another task refreshed it first.
+        let mut guard = PRICING_SERVICE.write().await;
+        if let Some(cached) = guard.as_ref() {
+            if cached.fetched_at.elapsed() < IN_MEMORY_TTL {
+                return Ok(Arc::clone(&cached.service));
+            }
+        }
+
+        match Self::fetch_inner().await {
+            Ok(service) => {
+                let service = Arc::new(service);
+                *guard = Some(CachedService {
+                    service: Arc::clone(&service),
+                    fetched_at: Instant::now(),
+                });
+                Ok(service)
+            }
+            // Refresh failed (e.g. offline). Keep serving the last good snapshot
+            // — a stale price beats none — and only surface the error when the
+            // cell was never warmed.
+            Err(err) => match guard.as_ref() {
+                Some(cached) => Ok(Arc::clone(&cached.service)),
+                None => Err(err),
+            },
+        }
     }
 
     pub fn lookup_with_source(

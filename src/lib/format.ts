@@ -10,6 +10,16 @@ export function formatCost(n: number): string {
   return `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
+// Compact "time ago" from a Unix-seconds timestamp: "just now", "5m ago",
+// "3h ago", "2d ago". Used for the pricing-data freshness hint.
+export function formatRelativeTime(epochSecs: number, nowSecs = Date.now() / 1000): string {
+  const diff = Math.max(0, Math.floor(nowSecs - epochSecs))
+  if (diff < 60) return 'just now'
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  return `${Math.floor(diff / 86400)}d ago`
+}
+
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 // Parse YYYY-MM-DD as local date (avoid TZ shift)

@@ -223,6 +223,8 @@ function mockModelReport() {
     totalCacheWrite: entries.reduce((s, e) => s + e.cacheWrite, 0),
     totalMessages: entries.reduce((s, e) => s + e.messageCount, 0),
     totalCost: entries.reduce((s, e) => s + e.cost, 0),
+    // Pretend the LiteLLM pricing cache was refreshed ~20 min ago.
+    pricingUpdatedAt: Math.floor(Date.now() / 1000) - 20 * 60,
   }
 }
 

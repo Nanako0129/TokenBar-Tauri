@@ -37,6 +37,11 @@ pub fn load_cached_any_age() -> Option<PricingDataset> {
     cache::load_cache_any_age(CACHE_FILENAME)
 }
 
+/// Unix-seconds time the LiteLLM pricing cache was last fetched, if present.
+pub fn cached_at() -> Option<u64> {
+    cache::cache_timestamp(CACHE_FILENAME)
+}
+
 pub async fn fetch() -> Result<PricingDataset, reqwest::Error> {
     if let Some(cached) = load_cached() {
         return Ok(cached);

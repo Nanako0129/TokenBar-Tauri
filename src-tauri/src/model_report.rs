@@ -40,6 +40,10 @@ struct ModelReportData {
     total_cache_write: i64,
     total_messages: i32,
     total_cost: f64,
+    /// Unix-seconds time the LiteLLM pricing dataset was last fetched from
+    /// upstream (the on-disk cache write time). `None` before the first fetch.
+    /// Surfaced as the "prices updated …" hint in the Models view.
+    pricing_updated_at: Option<u64>,
 }
 
 /// Build the per-model report for `year` (empty string = all time).
@@ -102,5 +106,6 @@ fn map_report(report: tokscale_core::ModelReport) -> ModelReportData {
         total_cache_write: report.total_cache_write,
         total_messages: report.total_messages,
         total_cost: report.total_cost,
+        pricing_updated_at: tokscale_core::pricing::pricing_cached_at(),
     }
 }

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import type { ModelReport, ModelReportEntry } from '../../lib/types'
 import { getClientStyle } from '../../lib/clients'
-import { humanizeTokens, formatCost } from '../../lib/format'
+import { humanizeTokens, formatCost, formatRelativeTime } from '../../lib/format'
 import type { ColorFor } from '../../lib/modelColors'
 
 interface Props {
@@ -40,8 +40,15 @@ export function ModelsView({ report, clientIds, colorFor }: Props) {
       <div className="model-card">
         <div className="model-head">
           <h2 className="model-heading">Models by cost</h2>
-          <div className="model-sub">
-            {rows.length} model{rows.length === 1 ? '' : 's'} · {humanizeTokens(totalTokens)} · {formatCost(totalCost)}
+          <div className="model-head-meta">
+            <div className="model-sub">
+              {rows.length} model{rows.length === 1 ? '' : 's'} · {humanizeTokens(totalTokens)} · {formatCost(totalCost)}
+            </div>
+            {report.pricingUpdatedAt != null && (
+              <div className="model-priced" title="LiteLLM pricing data; refreshes automatically about once an hour">
+                Prices updated {formatRelativeTime(report.pricingUpdatedAt)}
+              </div>
+            )}
           </div>
         </div>
         {rows.length === 0 ? (

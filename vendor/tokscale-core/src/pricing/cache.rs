@@ -59,6 +59,23 @@ pub fn load_cache_any_age<T: for<'de> Deserialize<'de>>(filename: &str) -> Optio
     load_cache_with_policy(filename, true)
 }
 
+/// Unix-seconds timestamp recorded when this cache file was last written (i.e.
+/// when its data was last fetched), regardless of staleness. `None` when the
+/// file is absent or unreadable. The payload is parsed as opaque JSON so this
+/// stays cheap and type-agnostic.
+pub fn cache_timestamp(filename: &str) -> Option<u64> {
+    let canonical_path = get_cache_path(filename);
+    let content = match fs::read_to_string(&canonical_path) {
+        Ok(content) => content,
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => legacy_cache_paths(filename)
+            .into_iter()
+            .find_map(|path| fs::read_to_string(&path).ok())?,
+        Err(_) => return None,
+    };
+    let parsed: CachedData<serde_json::Value> = serde_json::from_str(&content).ok()?;
+    Some(parsed.timestamp)
+}
+
 pub fn save_cache<T: Serialize>(filename: &str, data: &T) -> Result<(), std::io::Error> {
     let dir = get_cache_dir();
     fs::create_dir_all(&dir)?;
