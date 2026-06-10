@@ -1520,44 +1520,91 @@ fn choose_best_source_result(
     openrouter_result: Option<LookupResult>,
     provider_id: Option<&str>,
 ) -> Option<LookupResult> {
-    match (&litellm_result, &openrouter_result) {
+    match (litellm_result, openrouter_result) {
         (Some(l), Some(o)) => {
-            let l_matches_provider =
-                provider_identity::matches_provider_hint(&l.matched_key, provider_id);
-            let o_matches_provider =
-                provider_identity::matches_provider_hint(&o.matched_key, provider_id);
-
-            if l_matches_provider && !o_matches_provider {
-                return litellm_result;
+            // Pick the better source, then graft any cache rates the winner is
+            // missing from the runner-up so cache-heavy usage isn't billed at $0.
+            if prefer_litellm_over_openrouter(&l, &o, provider_id) {
+                let donor = o.pricing.clone();
+                Some(backfill_cache_costs(l, &donor))
+            } else {
+                let donor = l.pricing.clone();
+                Some(backfill_cache_costs(o, &donor))
             }
-            if o_matches_provider && !l_matches_provider {
-                return openrouter_result;
-            }
-
-            let l_is_original = is_original_provider(&l.matched_key);
-            let o_is_original = is_original_provider(&o.matched_key);
-            let l_is_reseller = is_reseller_provider(&l.matched_key);
-            let o_is_reseller = is_reseller_provider(&o.matched_key);
-
-            if o_is_original && !l_is_original {
-                return openrouter_result;
-            }
-            if l_is_original && !o_is_original {
-                return litellm_result;
-            }
-            if !l_is_reseller && o_is_reseller {
-                return litellm_result;
-            }
-            if !o_is_reseller && l_is_reseller {
-                return openrouter_result;
-            }
-
-            litellm_result
         }
-        (Some(_), None) => litellm_result,
-        (None, Some(_)) => openrouter_result,
+        (Some(l), None) => Some(l),
+        (None, Some(o)) => Some(o),
         (None, None) => None,
     }
+}
+
+/// Returns true when the LiteLLM match should win over the OpenRouter one.
+/// Prefers the source whose key matches the provider hint, then original
+/// providers over resellers; LiteLLM breaks an otherwise exact tie.
+fn prefer_litellm_over_openrouter(
+    l: &LookupResult,
+    o: &LookupResult,
+    provider_id: Option<&str>,
+) -> bool {
+    let l_matches_provider = provider_identity::matches_provider_hint(&l.matched_key, provider_id);
+    let o_matches_provider = provider_identity::matches_provider_hint(&o.matched_key, provider_id);
+
+    if l_matches_provider && !o_matches_provider {
+        return true;
+    }
+    if o_matches_provider && !l_matches_provider {
+        return false;
+    }
+
+    let l_is_original = is_original_provider(&l.matched_key);
+    let o_is_original = is_original_provider(&o.matched_key);
+    let l_is_reseller = is_reseller_provider(&l.matched_key);
+    let o_is_reseller = is_reseller_provider(&o.matched_key);
+
+    if o_is_original && !l_is_original {
+        return false;
+    }
+    if l_is_original && !o_is_original {
+        return true;
+    }
+    if !l_is_reseller && o_is_reseller {
+        return true;
+    }
+    if !o_is_reseller && l_is_reseller {
+        return false;
+    }
+
+    true
+}
+
+/// Fill any cache-token rates the chosen pricing omits from a donor row that
+/// has them. Provider-prefixed OpenRouter entries frequently carry input/output
+/// rates but no `input_cache_read`/`input_cache_write`, which would price cache
+/// reads — typically the bulk of Claude usage — at $0. We keep the winner's
+/// input/output (which may include provider markup) and only graft the missing
+/// cache fields, so rows that already price cache are left untouched (no-op).
+fn backfill_cache_costs(mut winner: LookupResult, donor: &ModelPricing) -> LookupResult {
+    let p = &mut winner.pricing;
+    if p.cache_read_input_token_cost.is_none() && donor.cache_read_input_token_cost.is_some() {
+        p.cache_read_input_token_cost = donor.cache_read_input_token_cost;
+        if p.cache_read_input_token_cost_above_200k_tokens.is_none() {
+            p.cache_read_input_token_cost_above_200k_tokens =
+                donor.cache_read_input_token_cost_above_200k_tokens;
+        }
+        if p.cache_read_input_token_cost_above_272k_tokens.is_none() {
+            p.cache_read_input_token_cost_above_272k_tokens =
+                donor.cache_read_input_token_cost_above_272k_tokens;
+        }
+    }
+    if p.cache_creation_input_token_cost.is_none() && donor.cache_creation_input_token_cost.is_some()
+    {
+        p.cache_creation_input_token_cost = donor.cache_creation_input_token_cost;
+        if p.cache_creation_input_token_cost_above_200k_tokens.is_none() {
+            p.cache_creation_input_token_cost_above_200k_tokens =
+                donor.cache_creation_input_token_cost_above_200k_tokens;
+        }
+    }
+    winner
 }
 
 fn exact_match_with_provider_prefixes(
@@ -1589,6 +1636,83 @@ fn exact_match_with_provider_prefixes(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn lookup_result(matched: &str, source: &str, pricing: ModelPricing) -> LookupResult {
+        LookupResult {
+            pricing,
+            source: source.into(),
+            matched_key: matched.into(),
+        }
+    }
+
+    // A provider-matched OpenRouter row that omits cache rates must not bill
+    // cache tokens at $0 when a runner-up (LiteLLM) prices them: the winner
+    // keeps its input/output but borrows the missing cache fields. This is the
+    // claude-fable-5 case — OpenRouter `anthropic/claude-fable-5` carries only
+    // input/output, so cache reads (the bulk of Claude usage) were dropped.
+    #[test]
+    fn choose_best_backfills_cache_costs_from_runner_up() {
+        let openrouter = lookup_result(
+            "anthropic/claude-fable-5",
+            "OpenRouter",
+            ModelPricing {
+                input_cost_per_token: Some(0.00001),
+                output_cost_per_token: Some(0.00005),
+                cache_read_input_token_cost: None,
+                cache_creation_input_token_cost: None,
+                ..Default::default()
+            },
+        );
+        let litellm = lookup_result(
+            "claude-fable-5",
+            "LiteLLM",
+            ModelPricing {
+                input_cost_per_token: Some(0.00001),
+                output_cost_per_token: Some(0.00005),
+                cache_read_input_token_cost: Some(0.000001),
+                cache_creation_input_token_cost: Some(0.0000125),
+                ..Default::default()
+            },
+        );
+
+        let chosen =
+            choose_best_source_result(Some(litellm), Some(openrouter), Some("anthropic")).unwrap();
+
+        // OpenRouter still wins on the provider hint, but now prices cache.
+        assert_eq!(chosen.source, "OpenRouter");
+        assert_eq!(chosen.pricing.cache_read_input_token_cost, Some(0.000001));
+        assert_eq!(
+            chosen.pricing.cache_creation_input_token_cost,
+            Some(0.0000125)
+        );
+    }
+
+    // Backfill must never overwrite cache rates the winner already carries.
+    #[test]
+    fn choose_best_keeps_existing_cache_costs() {
+        let winner = lookup_result(
+            "anthropic/claude-x",
+            "OpenRouter",
+            ModelPricing {
+                input_cost_per_token: Some(0.00001),
+                output_cost_per_token: Some(0.00005),
+                cache_read_input_token_cost: Some(0.000002),
+                ..Default::default()
+            },
+        );
+        let donor = lookup_result(
+            "claude-x",
+            "LiteLLM",
+            ModelPricing {
+                cache_read_input_token_cost: Some(0.000001),
+                ..Default::default()
+            },
+        );
+
+        let chosen =
+            choose_best_source_result(Some(donor), Some(winner), Some("anthropic")).unwrap();
+        assert_eq!(chosen.pricing.cache_read_input_token_cost, Some(0.000002));
+    }
 
     /// Mock LiteLLM data matching real API responses for OpenCode Zen models
     fn mock_litellm() -> HashMap<String, ModelPricing> {
