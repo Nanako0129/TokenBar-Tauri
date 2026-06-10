@@ -1,5 +1,5 @@
 import React from 'react'
-import { UsageBarGraph2D, UsageView, StackBy } from '../UsageBarGraph2D'
+import { UsageBarGraph2D, UsageView, StackBy, Metric } from '../UsageBarGraph2D'
 import { AgentLimitsCard } from '../AgentLimitsCard'
 import { UsageTraceCard } from '../UsageTraceCard'
 import { ModelBreakdownCard } from '../ModelBreakdownCard'
@@ -23,6 +23,8 @@ interface Props {
   onUsageViewChange: (v: UsageView) => void
   stackBy: StackBy
   onStackByChange: (s: StackBy) => void
+  metric: Metric
+  onMetricChange: (m: Metric) => void
   graphLight: string
   graphDark: string
   accent: string
@@ -55,6 +57,8 @@ export function OverviewView({
   onUsageViewChange,
   stackBy,
   onStackByChange,
+  metric,
+  onMetricChange,
   graphLight,
   graphDark,
   accent,
@@ -78,6 +82,8 @@ export function OverviewView({
       onViewChange={onUsageViewChange}
       stackBy={stackBy}
       onStackByChange={onStackByChange}
+      metric={metric}
+      onMetricChange={onMetricChange}
       grid={grid}
       graphLight={graphLight}
       graphDark={graphDark}

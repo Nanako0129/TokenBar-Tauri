@@ -10,7 +10,7 @@ import { DailyView } from './components/views/DailyView'
 import { StatsView } from './components/views/StatsView'
 import { HourlyView } from './components/views/HourlyView'
 import { AgentsView } from './components/views/AgentsView'
-import { UsageView, StackBy } from './components/UsageBarGraph2D'
+import { UsageView, StackBy, Metric } from './components/UsageBarGraph2D'
 import { buildGrid } from './lib/grid'
 import { useGraphStream } from './hooks/useGraphStream'
 import { useAgentUsage } from './hooks/useAgentUsage'
@@ -29,6 +29,7 @@ import { getTheme, THEMES, ThemeName } from './lib/themes'
 const THEME_KEY = 'tokenbar:theme:v1'
 const USAGE_VIEW_KEY = 'tokenbar:usageview:v1'
 const STACK_BY_KEY = 'tokenbar:stackby:v1'
+const METRIC_KEY = 'tokenbar:metric:v1'
 const VIEW_KEY = 'tokenbar:view:v1'
 
 const APP_VIEWS: AppView[] = ['overview', 'models', 'daily', 'hourly', 'stats', 'agents']
@@ -55,6 +56,14 @@ function loadStackBy(): StackBy {
     if (raw === 'model' || raw === 'agent') return raw
   } catch {}
   return 'model'
+}
+
+function loadMetric(): Metric {
+  try {
+    const raw = localStorage.getItem(METRIC_KEY)
+    if (raw === 'tokens' || raw === 'cost') return raw
+  } catch {}
+  return 'tokens'
 }
 
 function loadView(): AppView {
@@ -96,6 +105,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>('overview')
   const [usageView, setUsageView] = useState<UsageView>(() => loadUsageView())
   const [stackBy, setStackBy] = useState<StackBy>(() => loadStackBy())
+  const [metric, setMetric] = useState<Metric>(() => loadMetric())
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   const [settingsOpen, setSettingsOpen] = useState(false)
 
@@ -123,6 +133,10 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem(STACK_BY_KEY, stackBy) } catch {}
   }, [stackBy])
+
+  useEffect(() => {
+    try { localStorage.setItem(METRIC_KEY, metric) } catch {}
+  }, [metric])
 
   useEffect(() => {
     try { localStorage.setItem(VIEW_KEY, activeView) } catch {}
@@ -601,6 +615,8 @@ export default function App() {
                   onUsageViewChange={setUsageView}
                   stackBy={stackBy}
                   onStackByChange={setStackBy}
+                  metric={metric}
+                  onMetricChange={setMetric}
                   graphLight={palette.graphLight}
                   graphDark={palette.graphDark}
                   accent={mode.accent}
@@ -633,6 +649,8 @@ export default function App() {
                   onUsageViewChange={setUsageView}
                   stackBy={stackBy}
                   onStackByChange={setStackBy}
+                  metric={metric}
+                  onMetricChange={setMetric}
                   graphLight={palette.graphLight}
                   graphDark={palette.graphDark}
                   accent={mode.accent}

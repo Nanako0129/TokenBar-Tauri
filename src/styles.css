@@ -819,8 +819,10 @@ html, body, #root {
 .bar2d-head-right {
   min-width: 0;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
   gap: 6px;
 }
 .bar2d-viewtoggle {
@@ -1466,9 +1468,20 @@ html, body, #root {
   color: var(--text);
   margin: 0;
 }
+.model-head-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
 .model-sub {
   font-size: 11px;
   color: var(--text-muted);
+}
+.model-priced {
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0.75;
 }
 .model-empty {
   font-size: 11px;

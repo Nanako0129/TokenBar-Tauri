@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { UsageBarGraph2D, UsageView, StackBy } from '../UsageBarGraph2D'
+import { UsageBarGraph2D, UsageView, StackBy, Metric } from '../UsageBarGraph2D'
 import type { ModelReport, Stats, UsagePayload } from '../../lib/types'
 import type { ColorFor } from '../../lib/modelColors'
 import type { GridLayout } from '../../lib/grid'
@@ -16,6 +16,8 @@ interface Props {
   onUsageViewChange: (v: UsageView) => void
   stackBy: StackBy
   onStackByChange: (s: StackBy) => void
+  metric: Metric
+  onMetricChange: (m: Metric) => void
   graphLight: string
   graphDark: string
   accent: string
@@ -36,6 +38,8 @@ export function StatsView({
   onUsageViewChange,
   stackBy,
   onStackByChange,
+  metric,
+  onMetricChange,
   graphLight,
   graphDark,
   accent,
@@ -69,6 +73,8 @@ export function StatsView({
         onViewChange={onUsageViewChange}
         stackBy={stackBy}
         onStackByChange={onStackByChange}
+        metric={metric}
+        onMetricChange={onMetricChange}
         grid={grid}
         graphLight={graphLight}
         graphDark={graphDark}

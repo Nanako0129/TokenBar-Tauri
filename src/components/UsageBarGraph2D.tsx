@@ -9,6 +9,8 @@ import { TokenUsageCard } from './TokenUsageCard'
 
 export type UsageView = '2d' | '3d'
 export type StackBy = 'model' | 'agent'
+/** Whether bar length encodes token count or spend (cost). */
+export type Metric = 'tokens' | 'cost'
 
 interface Props {
   payload: UsagePayload
@@ -21,6 +23,9 @@ interface Props {
    *  by agent/client (original brand colors). */
   stackBy: StackBy
   onStackByChange: (s: StackBy) => void
+  /** Whether the bar length encodes token count or spend. */
+  metric: Metric
+  onMetricChange: (m: Metric) => void
   grid: GridLayout
   graphLight: string
   graphDark: string
@@ -128,6 +133,8 @@ export function UsageBarGraph2D({
   onViewChange,
   stackBy,
   onStackByChange,
+  metric,
+  onMetricChange,
   grid,
   graphLight,
   graphDark,
@@ -138,6 +145,11 @@ export function UsageBarGraph2D({
 }: Props) {
   const [hover, setHover] = useState<HoverState | null>(null)
   const headSubtitle = stats && view === '3d' ? 'Full year' : subtitle
+  // Bar length encodes either token count or spend; both are carried per
+  // segment/day so switching is a pure render-time accessor swap.
+  const isCost = metric === 'cost'
+  const barTotal = (b: DayBar) => (isCost ? b.totalCost : b.totalTokens)
+  const segValue = (s: Segment) => (isCost ? s.cost : s.tokens)
   const bars = useMemo(() => {
     const allowed = new Set(clientIds)
     const byDate = new Map<string, DayBar>()
@@ -159,7 +171,7 @@ export function UsageBarGraph2D({
   }, [clientIds, payload, colorFor, stackBy])
 
   const LEGEND_MAX = 12
-  const maxTokens = Math.max(1, ...bars.map(b => b.totalTokens))
+  const maxValue = Math.max(1, ...bars.map(barTotal))
   const width = 520
   // viewBox height matches the rendered CSS height (.bar2d-svg) so there is no
   // vertical distortion, and equals the 3D canvas height so toggling 2D/3D
@@ -174,23 +186,26 @@ export function UsageBarGraph2D({
   // aggregate tokens per key and sort heaviest-first so the legend matches the
   // stacked bars. Capped at LEGEND_MAX with a "+N" overflow chip.
   const legendModels = useMemo(() => {
-    const agg = new Map<string, { label: string; color: string; tokens: number }>()
+    const agg = new Map<string, { label: string; color: string; tokens: number; cost: number }>()
     for (const bar of bars) {
       for (const seg of bar.segments) {
-        const slot = agg.get(seg.key) ?? { label: seg.label, color: seg.color, tokens: 0 }
+        const slot = agg.get(seg.key) ?? { label: seg.label, color: seg.color, tokens: 0, cost: 0 }
         slot.tokens += seg.tokens
+        slot.cost += seg.cost
         agg.set(seg.key, slot)
       }
     }
-    return Array.from(agg.values()).sort((a, b) => b.tokens - a.tokens)
-  }, [bars])
+    return Array.from(agg.values()).sort((a, b) =>
+      isCost ? b.cost - a.cost : b.tokens - a.tokens,
+    )
+  }, [bars, isCost])
   const legendShown = legendModels.slice(0, LEGEND_MAX)
   const legendHidden = legendModels.length - legendShown.length
 
   function showTooltip(bar: DayBar, index: number) {
     if (bar.totalTokens <= 0 && bar.totalCost <= 0) return
     const x = index * (barWidth + gap)
-    const totalHeight = (bar.totalTokens / maxTokens) * chartHeight
+    const totalHeight = (barTotal(bar) / maxValue) * chartHeight
     const centerX = ((x + barWidth / 2) / width) * 100
     const topY = ((height - bottom - Math.max(totalHeight, 4) - 8) / height) * 100
     const transform =
@@ -234,6 +249,28 @@ export function UsageBarGraph2D({
                 aria-pressed={stackBy === 'agent'}
               >
                 Agent
+              </button>
+            </div>
+          )}
+          {/* Bar length: token count vs spend. 2D-only — the 3D heatmap is a
+              fixed contribution grid, not a value-scaled bar. */}
+          {view === '2d' && (
+            <div className="bar2d-viewtoggle" role="group" aria-label="Bar metric">
+              <button
+                type="button"
+                className={`bar2d-viewbtn${metric === 'tokens' ? ' is-active' : ''}`}
+                onClick={() => onMetricChange('tokens')}
+                aria-pressed={metric === 'tokens'}
+              >
+                Tokens
+              </button>
+              <button
+                type="button"
+                className={`bar2d-viewbtn${metric === 'cost' ? ' is-active' : ''}`}
+                onClick={() => onMetricChange('cost')}
+                aria-pressed={metric === 'cost'}
+              >
+                Price
               </button>
             </div>
           )}
@@ -292,12 +329,13 @@ export function UsageBarGraph2D({
           <line x1="0" x2={width} y1={height - bottom} y2={height - bottom} className="bar2d-axis" />
           {bars.map((bar, index) => {
             const x = index * (barWidth + gap)
-            const totalHeight = (bar.totalTokens / maxTokens) * chartHeight
+            const total = barTotal(bar)
+            const totalHeight = (total / maxValue) * chartHeight
             let y = height - bottom
             return (
               <g key={bar.date}>
                 {bar.segments.map(segment => {
-                  const h = bar.totalTokens > 0 ? (segment.tokens / bar.totalTokens) * totalHeight : 0
+                  const h = total > 0 ? (segValue(segment) / total) * totalHeight : 0
                   y -= h
                   return (
                     <rect
@@ -316,7 +354,7 @@ export function UsageBarGraph2D({
                     </rect>
                   )
                 })}
-                {bar.totalTokens === 0 && (
+                {total === 0 && (
                   <rect x={x} y={height - bottom - 2} width={barWidth} height={2} rx={1} className="bar2d-empty" />
                 )}
                 {(bar.totalTokens > 0 || bar.totalCost > 0) && (
