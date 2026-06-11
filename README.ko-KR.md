@@ -134,10 +134,11 @@ npm run install:local  # release 빌드 → /Applications/TokenBar.app
 
 TokenBar는 다른 분들의 작업 위에 서 있습니다:
 
-- **[tokcat](https://github.com/handlecusion/tokcat)**, by **handlecusion** — TokenBar가 fork한 원작 macOS 메뉴바 토큰 모니터입니다. Tauri 셸, 네이티브 tray, 그리고 전체 대시보드 디자인이 여기서 비롯되었습니다 — **당신의 토큰을 받아먹는 회전하는 메뉴바 고양이**를 포함해서요. handlecusion의 시그니처 아이디어이며, TokenBar는 이를 자랑스럽게 이어갑니다.
+- **[tokcat](https://github.com/handlecusion/tokcat)**, by **handlecusion** — TokenBar가 fork한 원작 macOS 메뉴바 토큰 모니터입니다. Tauri 셸, 네이티브 tray, 그리고 전체 대시보드 디자인이 여기서 비롯되었습니다 — **당신의 토큰을 받아먹는 회전하는 메뉴바 고양이**를 포함해서요. handlecusion의 시그니처 아이디어이며, TokenBar는 이를 자랑스럽게 이어갑니다. 메뉴바를 달리는 작은 펫 자체는 **Takuto Nakamura**의 [RunCat](https://kyome.io/runcat/)에서 시작되었습니다.
 - **[tokscale](https://github.com/junhoyeo/tokscale)**, by **Junho Yeo** — 그 `tokscale-core` crate가 TokenBar의 멀티 에이전트 세션 파싱·중복 제거·가격 책정을 구동합니다. 멀티 뷰 대시보드(Models / Daily / Hourly / Stats / Agents)는 tokscale의 TUI에서 영감을 받았습니다.
+- **[CodexBar](https://github.com/steipete/CodexBar)**, by **Peter Steinberger** — 쿼터 페이스(pace) 표시 방식(윈도우 대비 앞섬/뒤처짐, 예상 소진 시각)은 이 프로젝트의 접근을 참고했습니다.
 
-두 프로젝트와 메인테이너 분들께 감사드립니다.
+이 프로젝트들과 메인테이너 분들께 감사드립니다.
 
 ---
 

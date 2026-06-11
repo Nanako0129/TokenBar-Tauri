@@ -134,10 +134,11 @@ Release 會以 `TAURI_SIGNING_PRIVATE_KEY` 為內建更新器簽章（見 `tauri
 
 TokenBar 站在許多人的工作之上：
 
-- **[tokcat](https://github.com/handlecusion/tokcat)**，作者 **handlecusion**——TokenBar 所 fork 的原始 macOS 選單列 token 監控工具。Tauri 外殼、原生 tray、以及整體儀表板設計都源自於此——包括那隻**會吃掉你 token 的旋轉選單列貓**，handlecusion 的招牌創意，TokenBar 很自豪地保留了它。
+- **[tokcat](https://github.com/handlecusion/tokcat)**，作者 **handlecusion**——TokenBar 所 fork 的原始 macOS 選單列 token 監控工具。Tauri 外殼、原生 tray、以及整體儀表板設計都源自於此——包括那隻**會吃掉你 token 的旋轉選單列貓**，handlecusion 的招牌創意，TokenBar 很自豪地保留了它。而選單列上的跑步小寵物，最初源自 **Takuto Nakamura** 的 [RunCat](https://kyome.io/runcat/)。
 - **[tokscale](https://github.com/junhoyeo/tokscale)**，作者 **Junho Yeo**——其 `tokscale-core` crate 驅動了 TokenBar 的多 agent 工作階段解析、去重與定價。多視圖儀表板（Models / Daily / Hourly / Stats / Agents）的設計靈感來自 tokscale 的 TUI。
+- **[CodexBar](https://github.com/steipete/CodexBar)**，作者 **Peter Steinberger**——額度步調（pace）的呈現方式（超前／落後視窗、預估用罄時間）參考了它的做法。
 
-感謝這兩個專案及其維護者。
+感謝這些專案及其維護者。
 
 ---
 

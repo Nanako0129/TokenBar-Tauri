@@ -156,13 +156,18 @@ TokenBar stands on the work of others:
   original macOS menu-bar token monitor that TokenBar is forked from. The Tauri
   shell, native tray, and overall dashboard design originate there — including
   the **spinning menu-bar cat that digests your tokens**, handlecusion's
-  signature creative flourish, which TokenBar proudly keeps.
+  signature creative flourish, which TokenBar proudly keeps. The running
+  menu-bar pet itself traces back to the original
+  [RunCat](https://kyome.io/runcat/) by **Takuto Nakamura**.
 - **[tokscale](https://github.com/junhoyeo/tokscale)** by **Junho Yeo** — its
   `tokscale-core` crate powers TokenBar's multi-agent session parsing,
   deduplication, and pricing. The multi-view dashboard (Models / Daily / Hourly /
   Stats / Agents) is inspired by tokscale's TUI.
+- **[CodexBar](https://github.com/steipete/CodexBar)** by **Peter Steinberger**
+  — the quota-pace presentation (ahead of / behind your window, projected
+  run-dry time) references its approach.
 
-Thank you to both projects and their maintainers.
+Thank you to these projects and their maintainers.
 
 ---
 
