@@ -1,5 +1,7 @@
-TokenBar 2.0 beta is here! The app has been rewritten as a native Mac app: Liquid Glass UI, a 3D usage graph, one-click quota tracking in the menu bar, smaller and faster. It installs alongside this version, so you can try it risk-free:
+TokenBar 1.0 is here — fully rewritten as a native Mac app: Liquid Glass UI, an interactive 3D usage graph, one-click quota tracking in the menu bar, smaller and faster.
 
-- brew install nanako0129/tokenbar/tokenbar@beta
+This is the final build of the original (Tauri) TokenBar. Move to the native app — it keeps your usage history and settings:
 
-More info: https://github.com/Nanako0129/TokenBar-Native
+- brew install --cask nanako0129/tokenbar/tokenbar
+
+More: https://github.com/Nanako0129/TokenBar

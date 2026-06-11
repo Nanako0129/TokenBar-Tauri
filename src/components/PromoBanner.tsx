@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 
-// One-time promo for the native rewrite beta. Dismiss persists; the banner
-// retires entirely when the stable native 1.0.0 ships (Phase 10).
-const DISMISS_KEY = 'tokenbar:promo:native-beta:v1'
-const BREW_CMD = 'brew install nanako0129/tokenbar/tokenbar@beta'
+// One-time promo for the native 1.0 release. Dismiss persists. The new
+// dismiss key (v2) re-shows the banner once for the final-build announcement
+// even if the earlier beta promo was dismissed.
+const DISMISS_KEY = 'tokenbar:promo:native-1.0:v2'
+const BREW_CMD = 'brew install --cask nanako0129/tokenbar/tokenbar'
 
 export function PromoBanner() {
   const [dismissed, setDismissed] = useState(() => {
@@ -34,9 +35,9 @@ export function PromoBanner() {
   return (
     <div className="promo-banner" role="note">
       <div className="promo-text">
-        <strong>TokenBar 2.0 beta is here</strong> — native rewrite with Liquid
-        Glass, a 3D usage graph, lighter &amp; faster. Installs alongside this
-        version.
+        <strong>TokenBar 1.0 is here</strong> — fully rewritten as a native Mac
+        app with Liquid Glass, a 3D usage graph, lighter &amp; faster. This is
+        the final build of the original; move over and keep your history.
       </div>
       <div className="promo-actions">
         <button type="button" className="promo-copy" onClick={copy} title={BREW_CMD}>
