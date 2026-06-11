@@ -1,5 +1,9 @@
 <h1 align="center">TokenBar</h1>
 
+> [!IMPORTANT]
+> **這是舊版（Tauri）TokenBar——已封存、不再維護。**
+> TokenBar 1.0 已用原生 Swift 重寫：Liquid Glass 介面、互動式 3D 用量圖、選單列額度追蹤。請改用 **[Nanako0129/TokenBar](https://github.com/Nanako0129/TokenBar)**，或 `brew install --cask nanako0129/tokenbar/tokenbar`。升級會保留你的用量歷史與設定；若想停留在最終 Tauri 版，請用 `tokenbar@legacy` cask。
+
 <p align="center">
   <strong>macOS 選單列上的 AI token 用量監控。</strong>
 </p>

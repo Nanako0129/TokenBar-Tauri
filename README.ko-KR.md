@@ -1,5 +1,9 @@
 <h1 align="center">TokenBar</h1>
 
+> [!IMPORTANT]
+> **이 저장소는 레거시(Tauri) 버전입니다 — 보관 처리되어 더 이상 유지보수되지 않습니다.**
+> TokenBar 1.0은 네이티브 Swift 앱으로 새로 작성되었습니다: Liquid Glass UI, 인터랙티브 3D 사용량 그래프, 메뉴바 쿼터 추적. **[Nanako0129/TokenBar](https://github.com/Nanako0129/TokenBar)** 에서 받거나 `brew install --cask nanako0129/tokenbar/tokenbar` 로 설치하세요. 업그레이드해도 사용 기록과 설정은 그대로 유지됩니다. 마지막 Tauri 빌드를 계속 쓰려면 `tokenbar@legacy` cask를 이용하세요.
+
 <p align="center">
   <strong>당신의 AI 토큰 사용량, macOS 메뉴바에서 한눈에.</strong>
 </p>

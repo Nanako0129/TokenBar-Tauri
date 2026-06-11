@@ -1,5 +1,9 @@
 <h1 align="center">TokenBar</h1>
 
+> [!IMPORTANT]
+> **This is the legacy Tauri version — archived and no longer maintained.**
+> TokenBar 1.0 has been rewritten as a native Swift app with a Liquid Glass UI, an interactive 3D usage graph, and menu-bar quota tracking. Get it at **[Nanako0129/TokenBar](https://github.com/Nanako0129/TokenBar)** or `brew install --cask nanako0129/tokenbar/tokenbar`. Upgrading keeps your usage history and settings. To stay on this final Tauri build, use the `tokenbar@legacy` cask.
+
 <p align="center">
   <strong>AI token usage monitor for the macOS menu bar.</strong>
 </p>
