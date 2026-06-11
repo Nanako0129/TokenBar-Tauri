@@ -1,0 +1,87 @@
+---
+const base = import.meta.env.BASE_URL
+const points = [
+  {
+    title: '100% native Swift shell',
+    body: 'SwiftUI + AppKit around a Rust core — no webview. The popover opens instantly and feels like part of the OS, because it is.',
+  },
+  {
+    title: 'Liquid Glass, for real',
+    body: 'On macOS 26 the dashboard renders as clear glass cards floating over your wallpaper — the Control Center look. Earlier systems get a vibrancy fallback.',
+  },
+  {
+    title: 'SceneKit 3D at 160 fps',
+    body: 'The year-at-a-glance contribution terrain is a real 3D scene you orbit and zoom — camera position remembered across opens.',
+  },
+  {
+    title: 'Quota in the menu bar',
+    body: 'Show remaining subscription quota as signal bars, a ring, or a popsicle that melts as your 5-hour window drains — with battery-style warning colors. Right-click picks the subscription it tracks.',
+  },
+  {
+    title: 'Sparkle updates, AI-written notes',
+    body: 'In-app updates arrive over a signed Sparkle feed, with release notes summarized from the actual commits.',
+  },
+]
+---
+
+<section class="section native" id="native">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">The native rewrite · v1.0.0 beta</p>
+      <h2>Rebuilt in Swift.<br />Dressed in Liquid Glass.</h2>
+      <p>
+        TokenBar has been rewritten from the ground up as a native macOS app.
+        Same dashboard, same numbers — now with the system's own glass,
+        springs, and speed.
+      </p>
+    </div>
+
+    <div class="native-grid">
+      <figure class="shot">
+        <img
+          src={`${base}screenshots/native/hero-wide.png`}
+          alt="The native TokenBar popover rendered in Liquid Glass over the desktop wallpaper"
+          loading="lazy"
+        />
+      </figure>
+      <ul class="points">
+        {points.map((p) => (
+          <li>
+            <h3>{p.title}</h3>
+            <p>{p.body}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .native-grid {
+    display: grid; grid-template-columns: 1fr 1.05fr;
+    gap: clamp(32px, 6vw, 72px); align-items: center;
+  }
+  .shot {
+    border-radius: var(--radius); overflow: hidden;
+    border: 1px solid color-mix(in oklab, var(--accent) 40%, var(--line-strong));
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--accent) 12%, transparent),
+      0 40px 90px -40px color-mix(in oklab, var(--accent) 55%, transparent);
+    background: var(--bg);
+  }
+  .shot img { display: block; width: 100%; height: auto; }
+  .points { list-style: none; display: grid; gap: 22px; }
+  .points h3 { font-size: 19px; margin-bottom: 6px; }
+  .points h3::before {
+    content: ''; display: inline-block; width: 9px; height: 9px;
+    border-radius: 3px; margin-right: 11px;
+    background: linear-gradient(135deg, var(--accent-bright), var(--accent-deep));
+    box-shadow: 0 0 10px -1px var(--accent);
+  }
+  .points p { color: var(--muted); font-size: 15px; max-width: 52ch; }
+
+  @media (max-width: 880px) {
+    .native-grid { grid-template-columns: 1fr; }
+    .shot { max-width: 480px; margin-inline: auto; }
+  }
+</style>

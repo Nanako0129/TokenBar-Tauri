@@ -13,12 +13,16 @@ const faqs = [
     a: 'No. TokenBar is MIT-licensed and free — no subscription, no paid tier, no telemetry.',
   },
   {
+    q: 'What is the native beta?',
+    a: 'A ground-up Swift rewrite of TokenBar — SwiftUI shell, Liquid Glass on macOS 26, SceneKit 3D, Sparkle updates — around the same Rust parsing core. It installs as a separate “TokenBar Beta” app, so you can run it alongside stable. It becomes TokenBar v1.0.0 once the beta settles.',
+  },
+  {
     q: 'Where does my data go?',
-    a: 'Nowhere. Usage history is read locally from disk. The only network requests are the GitHub Releases updater manifest and public model-pricing data.',
+    a: 'Nowhere. Usage history is read locally from disk. Network requests are limited to the signed updater manifest, public model-pricing data, and optional Codex/Claude quota lookups using the OAuth credentials already on your machine.',
   },
   {
     q: 'Intel Mac or Windows?',
-    a: 'TokenBar targets Apple Silicon (arm64), macOS 11 and later. There’s no Intel, Windows, or Linux build.',
+    a: 'TokenBar targets Apple Silicon (arm64). Stable runs on macOS 11+, the native beta on macOS 14+ (Liquid Glass needs macOS 26). There’s no Intel, Windows, or Linux build.',
   },
   {
     q: 'How do I uninstall it?',

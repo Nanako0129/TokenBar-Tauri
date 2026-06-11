@@ -1,12 +1,12 @@
 ---
 const base = import.meta.env.BASE_URL
 const views = [
-  { img: 'overview', name: 'Overview', accent: '--p-anthropic', desc: 'The whole picture — contribution chart, agent limits, live session, model breakdown, streaks.' },
-  { img: 'models', name: 'Models', accent: '--p-openai', desc: 'Every model ranked by cost, with its share and a dim In · Out · CR · CW split.' },
-  { img: 'daily', name: 'Daily', accent: '--p-google', desc: 'Active days newest-first — select one to drill into that day’s per-model spend.' },
-  { img: 'hourly', name: 'Hourly', accent: '--p-cursor', desc: 'A 24-hour-of-day rhythm: when in the day your tokens actually get spent.' },
-  { img: 'stats', name: 'Stats', accent: '--p-deepseek', desc: 'Headline summary — total spend, active days, streaks, favorite model, best day.' },
-  { img: 'agents', name: 'Agents', accent: '--p-mistral', desc: 'Sub-agents ranked by cost, with their source apps, message count, and tokens.' },
+  { img: 'native/overview', name: 'Overview', accent: '--p-anthropic', desc: 'The whole picture — contribution chart, agent limits with pace, live session, model breakdown, streaks.' },
+  { img: 'native/models', name: 'Models', accent: '--p-openai', desc: 'Every model ranked by cost, with its share and a dim In · Out · CR · CW split.' },
+  { img: 'native/daily', name: 'Daily', accent: '--p-google', desc: 'Active days newest-first — select one to drill into that day’s per-model spend.' },
+  { img: 'native/hourly', name: 'Hourly', accent: '--p-cursor', desc: 'A 24-hour-of-day rhythm: when in the day your tokens actually get spent.' },
+  { img: 'native/stats', name: 'Stats', accent: '--p-deepseek', desc: 'Headline summary — total spend, active days, streaks, favorite model, best day.' },
+  { img: 'native/agents', name: 'Agents', accent: '--p-mistral', desc: 'Sub-agents ranked by cost, with their source apps, message count, and tokens.' },
 ]
 ---
 
@@ -37,14 +37,15 @@ const views = [
 
       <article class="card wide" style="--ac: var(--p-google);">
         <div class="frame">
-          <img src={`${base}screenshots/contribution-3d.png`} alt="TokenBar interactive 3D contribution graph" loading="lazy" />
+          <img src={`${base}screenshots/native/contribution-3d.png`} alt="TokenBar interactive 3D contribution graph" loading="lazy" />
         </div>
         <div class="meta">
           <h3><span class="tag" aria-hidden="true"></span>3D contribution graph</h3>
           <p>
             The same year of usage as an interactive GitHub-style tile terrain —
             orbit it, and the stacked 2D bars are one toggle away. Tokens stack by
-            <strong>model</strong> (provider shades) or by <strong>agent</strong> (brand colors).
+            <strong>model</strong> (provider shades) or by <strong>agent</strong> (brand colors),
+            in tokens or dollars.
           </p>
         </div>
       </article>
@@ -96,7 +97,9 @@ const views = [
   .frame {
     position: relative; overflow: hidden; background: var(--bg);
     border-bottom: 1px solid var(--line);
-    aspect-ratio: 16 / 11;
+    /* native shots are tall popover captures — a near-square window keeps the
+       header + first card visible without making the grid towering */
+    aspect-ratio: 1 / 1.05;
   }
   .frame::after {
     content: ''; position: absolute; inset: 0;

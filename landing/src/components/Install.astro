@@ -1,82 +1,115 @@
 ---
 const repo = 'https://github.com/Nanako0129/TokenBar'
-const brew = 'brew install --cask nanako0129/tokenbar/tokenbar'
+const repoNative = 'https://github.com/Nanako0129/TokenBar-Native'
+const brewStable = 'brew install --cask nanako0129/tokenbar/tokenbar'
+const brewBeta = 'brew install nanako0129/tokenbar/tokenbar@beta'
 ---
 
 <section class="section install" id="install">
-  <div class="container install-grid">
-    <div class="install-copy">
+  <div class="container">
+    <div class="section-head">
       <p class="eyebrow">Two minutes, Apple Silicon</p>
-      <h2>Install, click the cat, done.</h2>
+      <h2>Pick a channel, click the cat.</h2>
       <p>
-        TokenBar installs through Homebrew for <strong>macOS 11+ on Apple Silicon</strong>.
+        TokenBar installs through Homebrew for <strong>Apple Silicon Macs</strong>.
         The fully-qualified cask auto-taps, so there is no separate <code>brew tap</code> step.
       </p>
-      <ul class="notes">
-        <li><span class="dot"></span>The in-app updater checks GitHub Releases on launch and every 30 min.</li>
-        <li><span class="dot"></span>Signed artifacts are verified against the embedded public key before install.</li>
-        <li><span class="dot"></span>Building from source is available for development and local testing.</li>
-      </ul>
     </div>
 
-    <div class="install-card">
-      <div class="term">
-        <div class="term-bar"><i></i><i></i><i></i></div>
-        <pre class="term-body"><code><span class="c">$</span> {brew}</code></pre>
-        <button class="term-copy mono" id="brew2" type="button">Copy command</button>
+    <div class="channels">
+      <div class="channel">
+        <div class="ch-head">
+          <h3>Stable</h3>
+          <span class="pill mono">macOS 11+</span>
+        </div>
+        <p class="ch-desc">
+          The current shipping app. In-app updates check GitHub Releases and are
+          signature-verified before install.
+        </p>
+        <div class="term">
+          <pre class="term-body"><code><span class="c">$</span> {brewStable}</code></pre>
+          <button class="term-copy mono" data-cmd={brewStable} type="button">Copy command</button>
+        </div>
       </div>
-      <p class="src">
-        Building from source? <a href={`${repo}#build-from-source`}>Rust + Node ≥ 22</a>.
-      </p>
+
+      <div class="channel featured">
+        <div class="ch-head">
+          <h3>Native beta</h3>
+          <span class="pill pill-hot mono">Liquid Glass · macOS 14+</span>
+        </div>
+        <p class="ch-desc">
+          The Swift rewrite — installs as <strong>TokenBar Beta.app</strong> and runs
+          happily alongside stable, so you can try it without switching.
+        </p>
+        <div class="term">
+          <pre class="term-body"><code><span class="c">$</span> {brewBeta}</code></pre>
+          <button class="term-copy mono" data-cmd={brewBeta} type="button">Copy command</button>
+        </div>
+      </div>
     </div>
+
+    <p class="legacy-note">
+      When the native app goes stable as v1.0.0, the <code>tokenbar</code> cask
+      switches over and a <code>tokenbar@legacy</code> cask will pin the final
+      Tauri build for anyone who wants to stay.
+      Building from source? <a href={repoNative}>Swift 6 + Rust</a> (native) ·
+      <a href={`${repo}#build-from-source`}>Rust + Node ≥ 22</a> (stable).
+    </p>
   </div>
 </section>
 
 <script is:inline>
-  const b2 = document.getElementById('brew2')
-  if (b2) {
-    const cmd = 'brew install --cask nanako0129/tokenbar/tokenbar'
-    b2.addEventListener('click', async () => {
+  document.querySelectorAll('.term-copy[data-cmd]').forEach((b) => {
+    b.addEventListener('click', async () => {
       try {
-        await navigator.clipboard.writeText(cmd)
-        const t = b2.textContent
-        b2.textContent = 'Copied ✓'
-        b2.classList.add('ok')
-        setTimeout(() => { b2.textContent = t; b2.classList.remove('ok') }, 1600)
+        await navigator.clipboard.writeText(b.dataset.cmd || '')
+        const t = b.textContent
+        b.textContent = 'Copied ✓'
+        b.classList.add('ok')
+        setTimeout(() => { b.textContent = t; b.classList.remove('ok') }, 1600)
       } catch {}
     })
-  }
+  })
 </script>
 
 <style>
-  .install-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 72px); align-items: center; }
-  .install-copy h2 { font-size: clamp(28px, 4.4vw, 46px); margin: 14px 0 16px; }
-  .install-copy > p { color: var(--muted); max-width: 46ch; }
-  .install-copy strong { color: var(--ink-dim); }
-  .install-copy code { font-family: var(--font-mono); font-size: .9em; color: var(--accent-bright); }
-  .notes { list-style: none; margin-top: 22px; display: grid; gap: 12px; }
-  .notes li { color: var(--muted); font-size: 14.5px; display: flex; gap: 11px; align-items: baseline; }
-  .notes .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; transform: translateY(-1px); }
-
-  .install-card {
+  .install-grid { display: grid; }
+  .channels { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .channel {
     background: linear-gradient(180deg, var(--panel-2), var(--panel));
     border: 1px solid var(--line-strong); border-radius: var(--radius);
-    padding: 22px; box-shadow: var(--shadow);
+    padding: 26px 24px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 14px;
   }
-  .term { border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg); }
-  .term-bar { display: flex; gap: 7px; padding: 11px 14px; border-bottom: 1px solid var(--line); }
-  .term-bar i { width: 11px; height: 11px; border-radius: 50%; background: var(--line-strong); }
-  .term-bar i:nth-child(1){ background:#ff5f57 } .term-bar i:nth-child(2){ background:#febc2e } .term-bar i:nth-child(3){ background:#28c840 }
-  .term-body { padding: 18px 16px; }
+  .channel.featured {
+    border-color: color-mix(in oklab, var(--accent) 55%, var(--line-strong));
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--accent) 14%, transparent),
+      0 30px 70px -36px color-mix(in oklab, var(--accent) 60%, transparent);
+  }
+  .ch-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .ch-head h3 { font-size: 24px; }
+  .pill {
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    padding: 5px 11px; border-radius: 999px;
+    border: 1px solid var(--line-strong); color: var(--muted); white-space: nowrap;
+  }
+  .pill-hot {
+    color: var(--accent-bright);
+    border-color: color-mix(in oklab, var(--accent) 48%, var(--line-strong));
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+  }
+  .ch-desc { color: var(--muted); font-size: 14.5px; flex: 1; }
+  .ch-desc strong { color: var(--ink-dim); }
+
+  .term { border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg); padding: 14px; }
   .term-body code {
-    font-family: var(--font-mono); font-size: clamp(11px, 3.2vw, 13.5px); color: var(--ink);
-    /* wrap (and break the long tap/cask token) so it never overflows on phones */
+    font-family: var(--font-mono); font-size: clamp(11px, 3vw, 13px); color: var(--ink);
     white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word;
   }
   .term-body .c { color: var(--accent); }
-  /* frosted-glass pill like the hero command, tinted violet for the primary action */
   .term-copy {
-    width: 100%; margin-top: 14px; padding: 13px; cursor: pointer;
+    width: 100%; margin-top: 12px; padding: 12px; cursor: pointer;
     background: color-mix(in oklab, var(--accent) 16%, color-mix(in oklab, var(--panel) 70%, transparent));
     color: var(--accent-bright);
     border: 1px solid color-mix(in oklab, var(--accent) 48%, var(--line-strong));
@@ -91,9 +124,13 @@ const brew = 'brew install --cask nanako0129/tokenbar/tokenbar'
     color: var(--ink);
   }
   .term-copy.ok { color: var(--p-google); border-color: color-mix(in oklab, var(--p-google) 55%, var(--line-strong)); }
-  .btn.full { width: 100%; justify-content: center; margin-top: 12px; }
-  .src { margin-top: 16px; text-align: center; font-size: 13px; color: var(--faint); }
-  .src a { color: var(--ink-dim); border-bottom: 1px solid var(--line-strong); }
 
-  @media (max-width: 820px) { .install-grid { grid-template-columns: 1fr; } }
+  .legacy-note {
+    margin-top: 22px; font-size: 13.5px; color: var(--faint);
+    text-align: center; max-width: 70ch; margin-inline: auto;
+  }
+  .legacy-note code { font-family: var(--font-mono); font-size: .92em; color: var(--accent-bright); }
+  .legacy-note a { color: var(--ink-dim); border-bottom: 1px solid var(--line-strong); }
+
+  @media (max-width: 820px) { .channels { grid-template-columns: 1fr; } }
 </style>
