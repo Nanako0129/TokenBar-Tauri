@@ -3,6 +3,7 @@ import { Panel } from './components/Panel'
 import { HeaderBar } from './components/HeaderBar'
 import { SettingsPanel } from './components/SettingsPanel'
 import { DashboardTabs } from './components/DashboardTabs'
+import { PromoBanner } from './components/PromoBanner'
 import { ViewSwitch, AppView } from './components/ViewSwitch'
 import { OverviewView } from './components/views/OverviewView'
 import { ModelsView } from './components/views/ModelsView'
@@ -601,6 +602,7 @@ export default function App() {
                 kbdHints={cmdHeld}
                 refreshing={refreshing}
               />
+              <PromoBanner />
               <DashboardTabs clients={dashboardClients} active={activeTab} onChange={setActiveTab} kbdHints={cmdHeld} />
               <ViewSwitch active={activeView} onChange={setActiveView} />
               {activeView === 'overview' && (

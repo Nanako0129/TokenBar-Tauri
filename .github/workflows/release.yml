@@ -135,7 +135,7 @@ jobs:
             if [[ -n "$PREV" ]]; then RANGE="${PREV}..${TAG}"; else RANGE="${TAG}"; fi
             COMMITS="$(git log --no-merges --pretty='- %s' "$RANGE" 2>/dev/null || true)"
             STAT="$(git diff --stat "$RANGE" 2>/dev/null | tail -1 || true)"
-            PROMPT="$(printf 'Write concise, user-facing release notes for TokenBar %s, a macOS menu-bar AI token-usage monitor. Use short markdown bullets grouped under "### New" and "### Fixes" when applicable. Be specific and factual — only describe changes present below, do not invent. Keep it tight.\n\nGrouped changelog:\n%s\n\nCommits:\n%s\n\nDiff summary: %s\n' "$VERSION" "$CLIFF" "$COMMITS" "$STAT")"
+            PROMPT="$(printf 'Write concise, user-facing release notes for TokenBar %s, a macOS menu-bar AI token-usage monitor. STRICT FORMAT RULES: plain text only — absolutely no markdown syntax (no #, no **, no _, no backticks, no links, no tables). Structure: group lines under plain headings that are exactly "New:" or "Fixes:" on their own line, each item on its own line starting with "- ". Nothing else. This text renders verbatim in a native dialog where markdown syntax shows as raw characters. Be specific and factual — only describe changes present below, do not invent. Keep it tight.\n\nGrouped changelog:\n%s\n\nCommits:\n%s\n\nDiff summary: %s\n' "$VERSION" "$CLIFF" "$COMMITS" "$STAT")"
             REQ="$(jq -n --arg m "$MODEL" --arg p "$PROMPT" '{model:$m, stream:false, temperature:0.3, messages:[{role:"user", content:$p}]}')"
             RESP="$(curl -sS --max-time 60 https://api.deepseek.com/chat/completions \
               -H "Authorization: Bearer ${DEEPSEEK_API_KEY}" \
@@ -147,6 +147,14 @@ jobs:
             else
               echo "::warning::DeepSeek polish unavailable; using git-cliff changelog"
             fi
+          fi
+
+          # Optional verbatim banner: a release-prepend file (e.g. the native
+          # beta announcement) rides on top of the generated notes untouched.
+          if [[ -s ".github/release-prepend.md" ]]; then
+            PREPEND="$(cat .github/release-prepend.md)"
+            BODY="$(cat "$NOTES_FILE")"
+            printf '%s\n\n%s\n' "$PREPEND" "$BODY" > "$NOTES_FILE"
           fi
 
           [[ -s "$NOTES_FILE" ]] || printf 'TokenBar %s\n' "$VERSION" > "$NOTES_FILE"
